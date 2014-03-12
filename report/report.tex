@@ -19,11 +19,11 @@
 \usepackage{float}
 \usepackage{setspace}
 \usepackage[english]{babel}
-\usepackage{amsmath}
+
 \usepackage{graphicx}
 \usepackage{caption}
 \usepackage{subcaption}
-\usepackage{mathtools}
+
 
 \definecolor{darkblue}{rgb}{0.0,0.0,0.5}
 \newtheorem{Dfn}{Definition}
@@ -38,7 +38,115 @@
 \author{Mohsen Malmir, Erfan Sayyari}
 \maketitle
 
-\section{Appendix}
+\section{Abstract}
+
+\section{Introduction}
+
+\section{Design and Analysis of Algorithm}
+
+\subsection{Recursive definition of meaning}
+In the context of deep learning to represent the semantic content of sentences, we need to represent each word by a vector, and then represent their relative relation by a tree. We use binary tree representation and each word is a leaf node of the tree, and there are $n-1$ internal nodes, where $n$ is the length of the sentence. Each of the internal nodes shows the phrase of two or more consecutive words. To represent the meaning of each node we use a vector of $\mathbb{R}^d$.
+
+We use a random initialization to represent the meaning of each node in $\mathbb{R}^d$. Each random vector is produced from a Gaussian of dimension $d$ with zero mean and diagonal covariance matrix $\sigma^2I$ independent from each other. 
+
+To obtain the meaning of each internal node (say node $k$), rather than leaf nodes, we use the following equation:
+\begin{equation}
+x_k=h(W[x_i;x_j]+b)
+\end{equation}
+where $i$ and $j$ are children of node $k$, and $W$ is a matrix in $\mathbb{R}^{d\times2d}$ and $b$ is a vector in $mathbb{R}^d$. The function $h$ is a pointwise sigmoid-shaped function from $\mathbb{R}^d$ to the interval $[-1,+1]^d$.
+
+In the training stage, we need to learn parameters $W$ and $b$. Since our problem is a supervised method, we need a target value for the meaning of the sentences. We use the notation $x_r$ to represent the predicted meaning of the sentence (of the root node r). If the true target value of the sentence is $t$, the loss function could be for example $E=(t-x_r)^2$, and for training we need to minimize this error. To do minimization we need to compute $\frac{\partial{E}}{\partial{W}}$ and $\frac{\partial{E}}{\partial{b}}$ and use a stochastic gradient descent (SGD) algorithm to minimize $E$ for the all of sentences, or we can use LBFGS quasi-Newton method.  
+\subsection{Autoencoders}
+In the autoencoder approach, we want to change the goal of supervised learning to find the parameters $W$, $b$ automatically without training labels provided from the outside. We could consider the meaning of the node $x_k$ is equal to:
+\begin{equation}
+x_k=h(W[x_i;x_j]+b).
+\end{equation}
+
+We represent two other variables, $z_i$ and $z_j$ such that:
+\begin{equation}
+[z_i;z_j]=Ux_k+c
+\end{equation}
+where $U$ is a matrix in $\mathbb{R}^{2d\times d}$ and $c$ is a vector in $\mathbb{R}^{2d}$, where $z_i$ and $z_j$ are approximation reconstructions of the inputs $x_i$ and $x_j$, and $U$ and $c$ are additional parameters. So we can define a new loss as:
+\begin{equation}
+E=||x_i-z_i||^2+||x_j-z_j||^2=||[x_i;x_j]-Uh(W[x_i;x_j]+b)-c||^2.
+\end{equation}
+
+For the whole sentence the error is the sum of error of reconstruction of all non-leaf nodes. So we can use this reconstruction error to learn $W$, $b$, $U$, and $c$ with no training labels provided from the outside. 
+
+This approach has two other refinements. In order not to train the system to the trivial solution which leads to zero error we need to justify the equations. The trivial solution is all the parameters equal to zero. So the error will be zero. In order to solve it we can normalize the equation for the meaning of $k^th$ node such that:
+\begin{equation}
+x_k = \frac{h(W[x_i;x_j]+b}{||h(W[x_i;x_j]+b||}.
+\end{equation}
+This leads the $h$ function not to be pointwise anymore, and derivatives are much harder in this case.
+
+The other refinement is based on the intuition that the error of reconstruction of the longer phrases are much more important. Therefore, the definition of the loss for node $k$ is equal to:
+\begin{equation}
+E_1(k)=\frac{n_i}{n_i+n_j}||x_i-z_i||^2+\frac{n_j}{n_i+n_j}||x_j-z_j||^2
+\end{equation}
+where $z_i$ and $z_j$ are as before, and $n_i$ and $n_j$ are how many words are covered by nodes $i$ and $j$.
+\subsection{ Selecting a tree structure}
+After training the parameters automatically, we will generate a method to reconstruct the tree automatically as well. For a given sentence, if $T$ be the set of non-leaf nodes of its binary tree, the error of the whole tree is equal to:
+\begin{equation}
+\sum_{k \in T}E_1(k).
+\end{equation}
+
+For a sentence of length $n$, there is a finite number of possible trees calculated from the Catalan number of $C_{n-1}$, where $C_n$ is:
+\begin{equation}
+C_n= {2n \choose n} -{ 2n\choose n+1}.
+\end{equation}
+We can define an optimal tree to be the one that minimizes the total error. This optimal tree can be found by the exhaustive search or we can find it by a greedy algorithm approximately. 
+
+The greedy algorithm is as follows: first, we consider all $n-1$ pairs of neighboring words. Then we find the best pair based on reconstruction error with smallest error. Now omit their combination, and find the best pair based on remaining pairs. 
+
+A small change in the parameter values either causes no change in the optimal tree obtained by greedy algorithm or a jump to a different tree. Generally, gradient descent could cause cycling between two or more different trees, without convergence, while LBFGS would converge smoothly. 
+\subsection{Using meaning to predict labels}
+We can have a target value rather than target meaning for a sentence to be predicted. For example, positivity or negativity of the sentence, which is binary. 
+
+Each node of the tree (say node $k$) has a meaning vector $x_k$, and we can add a linear model to each node to predict target value of each node. If the values of the predicted labels are binary, then linear model is a standard logistic regression classifier, and if there are more than two classes, the model is multinomial or multiclass logistic regression.
+
+Suppose that we have $r$ different discrete labels and $x_k$ be the meaning of node $k$. Then the vector of predicted probabilities of the label values is equal to:
+\begin{equation}
+\bar{p}=softmax(Vx_k)
+\end{equation}
+where $V$ is a matrix in $\mathbb{R}^{r\times d}$. If we have $\bar{t}$ to be the true binary vector of length $r$ of node $k$, then we can define squared error of the prediction as $||\bar{t}-\bar{p}||^2$, or we can define log loss as:
+\begin{equation}
+E_2(k)=-\sum_{i=1}^{r}t_i\log{p_i}.
+\end{equation}
+We predict the target values for all the internal nodes except leaf nodes. 
+
+If we consider a collection $S$ of $m$ labeled training sentences, then we could write the loss function as:
+\begin{equation}
+J=\frac{1}{m}\sum_{<s,t> \in S}E(s,t,\theta)+\frac{\lambda}{2}||\theta||^2
+\end{equation}
+where $\theta=<W,b,U,c,V>$ is all the parameters of the model, and $\lambda$ is a regularization factor, and $E(s,t,\theta)$ is the total error for one sentence $s$ with label $t$ which is equal to:
+\begin{equation}
+E(s,t,\theta)=\sum_{k \in T(s)}\alpha E_1(k)+(1-\alpha)E_2(k)
+\end{equation}
+where $T(s)$ is the set of non-leaf nodes of the tree is constructed by the greedy algorithm for the sentence $s$. 
+
+In order to update the meaning of a node $x_n$, we can compute the derivative of the loss with respect to $x_n$ and update it. More particularly, to do this task we use the error of label targets $E_2$. We can write the general equation as:
+\begin{equation}
+\frac{\partial}{\partial x_n}\sum_{<s,t>\in S}\sum_{k \in T(s)}E_2(k).
+\end{equation}
+\subsection{Back-propagation}
+In order to compute the derivatives we use a method which is called \emph{backpropagation} (backprop for short). In this section we consider each node $j$ to a single real valued node which is named $z_j$.
+
+Let $j$ be a non-leaf node, and let $i$ be the nodes that feed the node $j$ with a directed edge $i\rightarrow j$. $z_j$ is equal to:
+\begin{equation}
+z_j=h(\sum_i w_{ij}z_i)=h(a_j)
+\end{equation}
+where $h$ is a scaler function $\mathbb{R} \rightarrow \mathbb{R}$ and $a_j$ is called the total activation for node $j$, and $w_{ij}$ is the weight of the directed edge from node $i$ to node $j$. We consider $J$ to be the loss for one training sentence. We can write the partial derivative of loss with respect to $w_{ij}$ as:
+\begin{equation}
+\frac{\partial J}{\partial w_{ij}}=\frac{J}{a_j}\frac{\partial a_j}{\partial w_{ij}}
+\end{equation}
+
+The term $\frac{\partial a_j}{\partial w_{ij}}$ is equal to $z_i$, and we write $\frac{\partial J}{\partial a_j}=\delta_j$. For node $j$, $\delta_j$ contains any nonlinearity of operations to calculate $J$. 
+
+
+ 
+
+\subsection{Numerical differentiation}
+\subsection{Back-propagation for vector-valued nodes}
 \begin{equation}
 J = -\sum_{i=1}^{q}t_i\log{r_i}
 \end{equation}
@@ -60,7 +168,7 @@ r =
     f_q(\sum_{j=1}^{d}W^{label}_{1j}x_{r_j}, \sum_{j=1}^{d}W^{label}_{2j}x_{r_j},\ldots, \sum_{j=1}^{d}W^{label}_{qj}x_{r_j})\\
  \end{pmatrix}
 \end{equation}
- So we could consider $W^{label}x_r$ as $net^{output}$, which is a vector in $\mathbb{R}^q$ and rewrite the r as:
+ So we could consider $net^{output}=W^{label}x_r$ as, which is a vector in $\mathbb{R}^q$ and rewrite the r as:
  \begin{equation}
  r=
  \begin{pmatrix}
@@ -88,7 +196,7 @@ Now we can calculate $\frac{\partial f_k}{\partial net^{output}_{t}}$ and $\frac
 \end{equation}
 and if $t\neq k$
 \begin{equation}
-\frac{\partial f_k}{\partial net^{output}_{k}}=-r_kr_t
+\frac{\partial f_k}{\partial net^{output}_{t}}=-r_kr_t
 \end{equation}
 \begin{equation}
 \frac{\partial net^{output}_t}{\partial W^{(1)}_{i,j}}=\frac{\partial}{\partial W^{(1)}_{i,j}}\sum_{j=1}^{d}W^{label}_{t,j}x_{r_j}
@@ -144,4 +252,41 @@ Now we want to calculate $\frac{\partial E^{node}_{rec}}{\partial W^{(2,1)}_{i,j
 \begin{equation}
 \frac{\partial E^{node}_{rec}}{\partial W^{(2,1)}_{i,j}}=\frac{2n_1}{n_1+n_2}\frac{\partial (\hat{c}_1)_i}{\partial W^{(2,1)}_{i,j}}(\hat{c}_1-c_1)=\frac{2n_1}{n_1+n_2}h(a_j)
 \end{equation}
+
+
+
+\section{Design of Experiments}
+
+\subsection{Dataset Selection}
+
+\subsection{Harmonic Mean  as a Measures for Goodness-of-Fit}
+\subsection{Hyperparameters Selection}
+
+\section{Results}
+
+
+\subsection{Classic400}
+\subsection{DailyKOS}
+
+\section{Discussion}
+
+
+
+\begin{thebibliography}{9}
+\bibitem{fastlda}
+Porteous, Ian, et al. "Fast collapsed gibbs sampling for latent dirichlet allocation." Proceedings of the 14th ACM SIGKDD international conference on Knowledge discovery and data mining. ACM, 2008.
+
+
+\bibitem{harmonic}
+Newton, Michael A., and Adrian E. Raftery. "Approximate Bayesian inference with the weighted likelihood bootstrap." Journal of the Royal Statistical Society. Series B (Methodological) (1994): 3-48.
+APA	
+
+\bibitem{wallach}
+Wallach, Hanna M., et al. "Evaluation methods for topic models." Proceedings of the 26th Annual International Conference on Machine Learning. ACM, 2009.
+
+\end{thebibliography}
+
+
+
+
 \end{document}
