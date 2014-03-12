@@ -1,0 +1,147 @@
+\listfiles
+\documentclass[twoside,12pt]{article}
+\newcommand{\dataset}{{\cal D}}
+\newcommand{\fracpartial}[2]{\frac{\partial #1}{\partial  #2}}
+\usepackage{hyperref}
+\usepackage{enumerate}
+\usepackage[top=2in, bottom=1.5in, left=0.85in, right=0.5in]{geometry}
+\usepackage[hyphenbreaks]{breakurl}
+%\usepackage[pdfstartview=FitH,pdfstartpage=13,pdfpagemode=UseNone]{hyperref}
+\usepackage{amsfonts}
+\usepackage{graphicx} 
+\usepackage[linesnumbered,ruled]{algorithm2e}
+\usepackage{float}
+\usepackage{amssymb,amsmath}
+\usepackage{mdwlist }
+\usepackage{color}
+\usepackage{multirow}
+\usepackage{listings}
+\usepackage{float}
+\usepackage{setspace}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{mathtools}
+
+\definecolor{darkblue}{rgb}{0.0,0.0,0.5}
+\newtheorem{Dfn}{Definition}
+\hypersetup{colorlinks,breaklinks,
+            linkcolor=darkblue,urlcolor=darkblue,
+            anchorcolor=darkblue,citecolor=darkblue}
+\newcommand{\sign}{\text{sign}}
+\newcommand{\argmin}{\arg\!\max}
+\begin{document}
+
+\title{Latent Dirichlet Allocation for Document Topic Discovery\\  Learning Algorithms, Project 3}
+\author{Mohsen Malmir, Erfan Sayyari}
+\maketitle
+
+\section{Appendix}
+\begin{equation}
+J = -\sum_{i=1}^{q}t_i\log{r_i}
+\end{equation}
+\begin{equation}
+r = softmax(W^{label}x_r)
+\end{equation}
+
+where $x_r$ is a vector in $\mathbb{R}^d$ and $W^{label}$ is a matrix in $\mathbb{R}^{q\times d}$. In addition, r is a vector in $\mathbb{R}^q$, where $r_j$ is equal to:
+\begin{equation}
+r_j=f_j((W^{label}x_r)_1,(W^{label}x_r)_2,\ldots,(W^{label}x_r)_q)=\frac{e^{(W^{label}x_r)_j}}{\sum_{i=1}^{q}e^{(W^{label}x_r)_j}}
+\end{equation}
+
+\begin{equation}
+r =
+\begin{pmatrix}
+  f_1(\sum_{j=1}^{d}W^{label}_{1j} x_{r_j}, \sum_{j=1}^{d}W^{label}_{2j}x_{r_j},\ldots, \sum_{j=1}^{d}W^{label}_{qj}x_{r_j})\\
+   f_2(\sum_{j=1}^{d}W^{label}_{1j}x_{r_j}, \sum_{j=1}^{d}W^{label}_{2j}x_{r_j},\ldots, \sum_{j=1}^{d}W^{label}_{qj}x_{r_j}) \\
+  \vdots  \\
+    f_q(\sum_{j=1}^{d}W^{label}_{1j}x_{r_j}, \sum_{j=1}^{d}W^{label}_{2j}x_{r_j},\ldots, \sum_{j=1}^{d}W^{label}_{qj}x_{r_j})\\
+ \end{pmatrix}
+\end{equation}
+ So we could consider $W^{label}x_r$ as $net^{output}$, which is a vector in $\mathbb{R}^q$ and rewrite the r as:
+ \begin{equation}
+ r=
+ \begin{pmatrix}
+ f_1(net^{output}_1,net^{output}_2,\ldots,net^{output}_q)\\
+  f_2(net^{output}_1,net^{output}_2,\ldots,net^{output}_q)\\
+\vdots \\
+ f_q(net^{output}_1,net^{output}_2,\ldots,net^{output}_q)\\
+ \end{pmatrix}
+\end{equation}
+Now, we want $\frac{\partial J}{\partial W^{(1)}_{i,j}}$, which is not explicitly related to loss function $J$. We could write:
+\begin{equation}
+x_r=h(W^{(1)}[c_1;c_2]+b^{(1)}])
+\end{equation} 
+where $h$ is a pointwise highly nonlinear function. Now we could have:
+\begin{equation}
+\frac{\partial J}{\partial W^{(1)}_{i,j}}=\sum_{k=1}^q\frac{\partial J}{\partial r_k}\frac{\partial r_k}{\partial W^{(1)}_{i,j}}
+\end{equation}
+$\frac{\partial J}{\partial r_k}=\frac{-t_k}{r_k}$, and we want $\frac{\partial r_k}{\partial W^{(1)}_{i,j}}$:
+\begin{equation}
+\frac{\partial r_k}{\partial W^{(1)}_{i,j}}=\frac{\partial f_k}{\partial W^{(1)}_{i,j}}=\sum_{t=1}^{q}\frac{\partial f_k}{\partial net^{output}_{t}}\frac{\partial net^{output}_t}{\partial W^{(1)}_{i,j}}
+\end{equation}
+Now we can calculate $\frac{\partial f_k}{\partial net^{output}_{t}}$ and $\frac{\partial net^{output}_t}{\partial W^{(1)}_{i,j}}$ separately. if $t=k$:
+\begin{equation}
+\frac{\partial f_k}{\partial net^{output}_{k}}=r_k(1-r_k)
+\end{equation}
+and if $t\neq k$
+\begin{equation}
+\frac{\partial f_k}{\partial net^{output}_{k}}=-r_kr_t
+\end{equation}
+\begin{equation}
+\frac{\partial net^{output}_t}{\partial W^{(1)}_{i,j}}=\frac{\partial}{\partial W^{(1)}_{i,j}}\sum_{j=1}^{d}W^{label}_{t,j}x_{r_j}
+\end{equation}
+If we write $x_{r_j}=h(W^{(1)}[c_1;c_2]+b^{(1)})_j$, and consider $net^{(r)}=(W^{(1)}[c_1;c_2]+b^{(1)})$ so:
+\begin{equation}
+\frac{\partial x_{r_j}}{\partial W^{(1)}_{i,j}}= h'(net)_j[c_1;c_2]_j
+\end{equation}
+so we have:
+\begin{equation}
+ \frac{\partial net^{output}_t}{\partial W^{(1)}_{i,j}}=\sum_{j=1}^{d}W^{label}_{t,j}h'(net)_j[c_1;c_2]_j
+\end{equation}
+
+\subsection{Calculating derivatives for error of reconstruction}
+Consider vector $C$ which is in $\mathbb{R}^{2d}$ be equal to the the vector producing by concatenating $c_1$ and $c_2$ each in $\mathbb{R}^d$ as the children of node $i$. We could concatenate the reconstructed vectors of node $i$ $z_1$ and $z_2$ each in $\mathbb{R}^d$ to build the vector $Z$ in $\mathbb{R}^{2d}$. The combining parameters are $W^{(1)}$ and $b^{(1)}$ and the reconstructing parameters are $W^{(2)}$ and $b^{(2)}$. Then we could write the relationships between them as:
+\begin{equation}
+Z = h(W^{(1)}C+b^{(1)})
+\end{equation}
+\begin{equation}
+\hat{C}=W^{(2)}Z+b^{(2)}=W^{(2)}h(W^{(1)}C+b^{(1)})+b^{(2)}
+\end{equation}
+We use a reconstruction error to train the neural network using $W^{(1)}$, $b^{(1)}$, $W^{(2)}$, and $b^{(2)}$. We could split the matrixes $W^{(1)}$ and $W^{(2)}$ in this way:
+\begin{equation}
+W^{(1)}=[W^{(1,1)}|W^{(1,2)}]
+\end{equation}
+where $W^{(1,1)}$ multiplies by $c_1$ and $W^{(1,2)}$ multiplies by $c_2$. In addition we could write $W^{(2)}$ as:
+\begin{equation}
+W^{(2)}=\begin{bmatrix}
+     W^{(2,1)} \\ \hline
+     W^{(2,2)}
+    \end{bmatrix}
+\end{equation} 
+where $W^{(2,1)}$ corresponds to $\hat{c}_1$ and it is multiplies by $z_1$ and $W^{(2,2)}$ corresponds to $\hat{c}_2$ and multiplies by $z_2$.
+
+If we write the error of reconstruction as:
+\begin{equation}
+E^{node}_{rec}=\frac{n_1}{n_1+n_2}||c_1-\hat{c}_1||^2+\frac{n_2}{n_2+n_1}||c_2-\hat{c}_2||^2
+\end{equation}
+now we want to calculate $\frac{\partial E^{node}_{rec}}{\partial W^{(1,1)}_{i,j}}$. We could write $\frac{n_1}{n_1+n_2}||c_1-\hat{c}_1||^2=\frac{n_1}{n_1+n_2}\sum_k{(c_1-\hat{c}_1)^2_k}$ so we have:
+\begin{align}
+\frac{\partial E^{node}_{rec}}{\partial W^{(1,1)}_{i,j}}=\frac{2n_1}{n_1+n_2}(\hat{c}_1-c_1)\frac{\partial}{\partial W^{(1,1)}_{i,j}}(\hat{c}_1-c_1)_{j}=\frac{2n_1}{n_1+n_2}\frac{\partial (\hat{c}_1)_j}{\partial W^{(1,1)}_{i,j}}
+\end{align}
+And $(\hat{c}_1)_j$ is equal to:
+\begin{equation}
+(\hat{c}_1)_j=\sum_{k}W^{(2,1)}_{j,k}h(W^{(1)}+b^{(1)})_k=\sum_kW^{(2,1)}_{j,k}h(a)_k
+\end{equation}
+So the partial derivative of $\frac{\partial (\hat{c}_1)_j}{\partial (W^{(1,1)}_{i,j})}$ mathematically is equal to:
+\begin{equation}
+\frac{\partial (\hat{c}_1)_j}{\partial (W^{(1,1)}_{i,j})}= W^{2,1}_{j,i}(\frac{\partial h(a_i)}{\partial a_i}.\frac{\partial a_i}{\partial W^{(1,1)}_{i,j}})=W^{(2,1)}_{j,i}h'(a_i)c_{i,j}
+\end{equation}
+
+Now we want to calculate $\frac{\partial E^{node}_{rec}}{\partial W^{(2,1)}_{i,j}}$:
+\begin{equation}
+\frac{\partial E^{node}_{rec}}{\partial W^{(2,1)}_{i,j}}=\frac{2n_1}{n_1+n_2}\frac{\partial (\hat{c}_1)_i}{\partial W^{(2,1)}_{i,j}}(\hat{c}_1-c_1)=\frac{2n_1}{n_1+n_2}h(a_j)
+\end{equation}
+\end{document}
