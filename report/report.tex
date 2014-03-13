@@ -143,9 +143,41 @@ where $h$ is a scaler function $\mathbb{R} \rightarrow \mathbb{R}$ and $a_j$ is 
 
 The term $\frac{\partial a_j}{\partial w_{ij}}$ is equal to $z_i$, and we write $\frac{\partial J}{\partial a_j}=\delta_j$. For node $j$, $\delta_j$ contains any nonlinearity of operations to calculate $J$. 
 
+For an output node which does not feed into any other node, we could calculate the total loss directly. Total loss is equal to the sum of loss over all nodes.  For an output node $k$ with local loss $J_k=L(z_k,t_k)$:
+\begin{equation}
+\delta_k=\frac{\partial J}{\partial a_k}=\frac{\partial J_k}{\partial a_k}=\frac{\partial L(z_k,t_k)}{\partial z_k}\frac{z_k}{a_k}=\frac{\partial L(z_k,t_k)}{\partial z_k}h'(a_k). 
+\end{equation}
+If $h(a)=\tanh(a)=\frac{e^a-e^{-a}}{(e^a+e^{-a})}$, then $h'(a)$ is $1-h(a)^2$.
 
- 
+Now we consider a node $j$ which is an internal node, that feeds into nodes indexed by $k$. The loss could be:
+\begin{equation}
+\delta_j=\frac{\partial J}{\partial a_j}=\sum_k \frac{\partial J}{\partial a_k}\frac{\partial a_k}{\partial a_j}=\sum_k \delta_k \frac{\partial a_k}{\partial a_j}.
+\end{equation}
+We index nodes that feed into node $k$ rather than $j$ with $i$:
+\begin{equation}
+a_k=\sum_i w_{ik}z_i=\sum_i w_{ik}h(a_i).
+\end{equation}
+Then we have $\frac{\partial a_k}{\partial a_j}$ as:
+\begin{equation}
+\frac{\partial a_k}{\partial a_j}=w_{jk}h'(a_j)
+\end{equation}
+and the delta value for node $j$ is:
+\begin{equation}
+\delta_j = h'(a_j)\sum_k \delta_k w_jk.
+\label{eq:delta scaler}
+\end{equation}
 
+For a leaf node $x_j$ we could calculate the partial derivative as well:
+\begin{equation}
+\frac{\partial J}{\partial x_j}=\sum_k \delta_k w_{jk}.
+\end{equation}
+
+Hence, the backpropagation algorithm is as follows:
+\begin{itemize}
+  \item Step 1: compute $\delta_k$ for all output node $k$.
+  \item Step 2: Working backwards, for other nodes $j$ compute $\delta_j$ with Equation~\ref{eq:delta scaler}
+  \item Step 3: Compute $\frac{\partial J}{\partial w_{ij}}=\delta_j z_i$
+  \end{itemize}
 \subsection{Numerical differentiation}
 \subsection{Back-propagation for vector-valued nodes}
 \begin{equation}
@@ -169,14 +201,14 @@ r =
     f_q(\sum_{j=1}^{d}W^{label}_{1j}x_{r_j}, \sum_{j=1}^{d}W^{label}_{2j}x_{r_j},\ldots, \sum_{j=1}^{d}W^{label}_{qj}x_{r_j})\\
  \end{pmatrix}
 \end{equation}
- So we could consider $net^{output}=W^{label}x_r$ as, which is a vector in $\mathbb{R}^q$ and rewrite the r as:
+ So we could consider $a^{output}=W^{label}x_r$ as, which is a vector in $\mathbb{R}^q$ and rewrite the r as:
  \begin{equation}
  r=
  \begin{pmatrix}
- f_1(net^{output}_1,net^{output}_2,\ldots,net^{output}_q)\\
-  f_2(net^{output}_1,net^{output}_2,\ldots,net^{output}_q)\\
+ f_1(a^{output}_1,a^{output}_2,\ldots,a^{output}_q)\\
+  f_2(a^{output}_1,a^{output}_2,\ldots,a^{output}_q)\\
 \vdots \\
- f_q(net^{output}_1,net^{output}_2,\ldots,net^{output}_q)\\
+ f_q(a^{output}_1,a^{output}_2,\ldots,a^{output}_q)\\
  \end{pmatrix}
 \end{equation}
 Now, we want $\frac{\partial J}{\partial W^{(1)}_{i,j}}$, which is not explicitly related to loss function $J$. We could write:
@@ -185,32 +217,69 @@ x_r=h(W^{(1)}[c_1;c_2]+b^{(1)}])
 \end{equation} 
 where $h$ is a pointwise highly nonlinear function. Now we could have:
 \begin{equation}
-\frac{\partial J}{\partial W^{(1)}_{i,j}}=\sum_{k=1}^q\frac{\partial J}{\partial r_k}\frac{\partial r_k}{\partial W^{(1)}_{i,j}}
+\frac{\partial J}{\partial W^{(1)}_{i,j}}=\frac{\partial J}{\partial a^{(r)}_i}\frac{\partial a^{(r)}_i}{\partial W^{(1)}_{i,j}}=\delta_i [c_1;c_2]_j
 \end{equation}
-$\frac{\partial J}{\partial r_k}=\frac{-t_k}{r_k}$, and we want $\frac{\partial r_k}{\partial W^{(1)}_{i,j}}$:
+where $\delta_i=\frac{\partial J}{\partial a^{(r)}_i}$ contains all nonlinearity. Now we could write
 \begin{equation}
-\frac{\partial r_k}{\partial W^{(1)}_{i,j}}=\frac{\partial f_k}{\partial W^{(1)}_{i,j}}=\sum_{t=1}^{q}\frac{\partial f_k}{\partial net^{output}_{t}}\frac{\partial net^{output}_t}{\partial W^{(1)}_{i,j}}
+\frac{\partial J}{\partial a^{(r)}_i}= \sum_{k=1}^q\frac{\partial J}{\partial r_k}\frac{\partial r_k}{\partial a^{(r)}_i}
 \end{equation}
-Now we can calculate $\frac{\partial f_k}{\partial net^{output}_{t}}$ and $\frac{\partial net^{output}_t}{\partial W^{(1)}_{i,j}}$ separately. if $t=k$:
+$\frac{\partial J}{\partial r_k}=\frac{-t_k}{r_k}$, and we want $\frac{\partial r_k}{\partial a^{(r)}_i}$:
 \begin{equation}
-\frac{\partial f_k}{\partial net^{output}_{k}}=r_k(1-r_k)
+\frac{\partial r_k}{\partial a^{(r)}_i}=\frac{\partial f_k}{\partial a^{(r)}_i}=\sum_{t=1}^{q}\frac{\partial f_k}{\partial a^{output}_{t}}\frac{\partial a^{output}_t}{\partial a^{(r)}_i}
+\end{equation}
+Now we can calculate $\frac{\partial f_k}{\partial a^{output}_{t}}$ and $\frac{\partial a^{output}_t}{\partial a^{(r)}_i}$ separately. if $t=k$:
+\begin{equation}
+\frac{\partial f_k}{\partial a^{output}_{k}}=r_k(1-r_k)
 \end{equation}
 and if $t\neq k$
 \begin{equation}
-\frac{\partial f_k}{\partial net^{output}_{t}}=-r_kr_t
+\frac{\partial f_k}{\partial a^{output}_{t}}=-r_kr_t
 \end{equation}
 \begin{equation}
-\frac{\partial net^{output}_t}{\partial W^{(1)}_{i,j}}=\frac{\partial}{\partial W^{(1)}_{i,j}}\sum_{j=1}^{d}W^{label}_{t,j}x_{r_j}
+\frac{\partial a^{output}_t}{\partial a^{(r)}_i}=\frac{\partial}{\partial a^{(r)}_i}\sum_{j=1}^{d}W^{label}_{t,j}x_{r_j}
 \end{equation}
-If we write $x_{r_j}=h(W^{(1)}[c_1;c_2]+b^{(1)})_j$, and consider $net^{(r)}=(W^{(1)}[c_1;c_2]+b^{(1)})$ so:
+If we write $x_{r_j}=h(W^{(1)}[c_1;c_2]+b^{(1)})_j=h(a^{(r)}_j)$, and consider $a^{(r)}=(W^{(1)}[c_1;c_2]+b^{(1)})$ so if $j=i$:
 \begin{equation}
-\frac{\partial x_{r_j}}{\partial W^{(1)}_{i,j}}= h'(net)_j[c_1;c_2]_j
+\frac{\partial x_{r_j}}{\partial a^{(r)}_i}= h'(a^{(r)})_i
 \end{equation}
-so we have:
+and if $j\neq i$, $\frac{\partial x_{r_j}}{\partial a^{(r)}_j}=0$. So 
 \begin{equation}
- \frac{\partial net^{output}_t}{\partial W^{(1)}_{i,j}}=\sum_{j=1}^{d}W^{label}_{t,j}h'(net)_j[c_1;c_2]_j
+ \frac{\partial a^{output}_t}{\partial a^{(r)}_i}=W^{label}_{t,i}h'(a^{(r)})_i
 \end{equation}
-
+So we could write $\delta_i$ as:
+\begin{equation}
+\delta_i=\sum_{k=1}^q \frac{-t_k}{r_k}\{\sum_{s=1}^q (r_s(1-r_s) \delta(s-k)-r_kr_s + r_s^2 \delta(s-k))(W^{label}_{s,i}h'(a^{(r)}_i))\}
+\end{equation}
+Now we want to calculate $\delta_j=\frac{\partial J}{\partial a_j}$ for internal nodes. If consider the nodes that node $j$ feed into them as $a^k$ we could write:
+\begin{equation}
+\delta_j=\frac{\partial J}{\partial a_j}=\sum_{p=1}^d \frac{\partial J}{\partial a^k_p}\frac{\partial a^k_p}{\partial a_j}=\sum_{p=1}^d \delta^{k}_p \frac{\partial a^k_p}{\partial a_j}
+\end{equation}
+There are other nodes that feed into node $k$ e.g. node $m$:
+\begin{equation}
+a^k=W^{(1)}[h(a);h(m)]
+\end{equation}
+If we write the portion of matrix $W^{(1)}$ that multiplies $h(a)$ as $W^{(1,1)}$ (or $W^{(1,2)}$) we have:
+\begin{equation}
+\frac{\partial a^k_p}{a_i}=h'(a_i)W^{(1,1)}_{pi}
+\end{equation}
+So $\delta_j$ is equal to:
+\begin{equation}
+\delta_j = \sum_{p=1}^d \delta_p^kh'(a_i)W^{(1,1)}_{pi}.
+\label{eq:delta vector}
+\end{equation}
+So for the vector-valued, backpropagation algorithm we could write:
+\begin{itemize}
+\item Step 1: Compute the delta vector for each output node.
+\item Step 2: Working backwards, compute the delta vector for each non-output node using Equation~\ref{eq:delta vector}
+\item Step 3: For every node, let $\delta$ be its delta vector and let $q^1,\ldots,q^m$ be the values of the nodes that feeding into it. If $m=0$ the node is a leaf. Otherwise, $\frac{\partial J}{\partial W}$ is equal to:
+\begin{equation}
+\frac{\partial J}{\partial W}=\delta [q^1;\ldots;q^m]^T.
+\end{equation}
+For the leaves we could write:
+\begin{equation}
+\frac{\partial J}{\partial x_j}=\sum_k \frac{\partial J}{\partial a_k}\frac{\partial a_k}{\partial x_j}=\sum_k \delta_k w_{jk}
+\end{equation}
+\end{itemize}
 \subsection{Calculating derivatives for error of reconstruction}
 Consider vector $C$ which is in $\mathbb{R}^{2d}$ be equal to the the vector producing by concatenating $c_1$ and $c_2$ each in $\mathbb{R}^d$ as the children of node $i$. We could concatenate the reconstructed vectors of node $i$ $z_1$ and $z_2$ each in $\mathbb{R}^d$ to build the vector $Z$ in $\mathbb{R}^{2d}$. The combining parameters are $W^{(1)}$ and $b^{(1)}$ and the reconstructing parameters are $W^{(2)}$ and $b^{(2)}$. Then we could write the relationships between them as:
 \begin{equation}
