@@ -129,79 +129,54 @@ In order to update the meaning of a node $x_n$, we can compute the derivative of
 \begin{equation}
 \frac{\partial}{\partial x_n}\sum_{<s,t>\in S}\sum_{k \in T(s)}E_2(k).
 \end{equation}
-\subsection{Back-propagation}
-In order to compute the derivatives we use a method which is called \emph{backpropagation} (backprop for short). In this section we consider each node $j$ to a single real valued node which is named $z_j$.
-
-Let $j$ be a non-leaf node, and let $i$ be the nodes that feed the node $j$ with a directed edge $i\rightarrow j$. $z_j$ is equal to:
-\begin{equation}
-z_j=h(\sum_i w_{ij}z_i)=h(a_j)
-\end{equation}
-where $h$ is a scaler function $\mathbb{R} \rightarrow \mathbb{R}$ and $a_j$ is called the total activation for node $j$, and $w_{ij}$ is the weight of the directed edge from node $i$ to node $j$. We consider $J$ to be the loss for one training sentence. We can write the partial derivative of loss with respect to $w_{ij}$ as:
-\begin{equation}
-\frac{\partial J}{\partial w_{ij}}=\frac{J}{a_j}\frac{\partial a_j}{\partial w_{ij}}
-\end{equation}
-
-The term $\frac{\partial a_j}{\partial w_{ij}}$ is equal to $z_i$, and we write $\frac{\partial J}{\partial a_j}=\delta_j$. For node $j$, $\delta_j$ contains any nonlinearity of operations to calculate $J$. 
-
-For an output node which does not feed into any other node, we could calculate the total loss directly. Total loss is equal to the sum of loss over all nodes.  For an output node $k$ with local loss $J_k=L(z_k,t_k)$:
-\begin{equation}
-\delta_k=\frac{\partial J}{\partial a_k}=\frac{\partial J_k}{\partial a_k}=\frac{\partial L(z_k,t_k)}{\partial z_k}\frac{z_k}{a_k}=\frac{\partial L(z_k,t_k)}{\partial z_k}h'(a_k). 
-\end{equation}
-If $h(a)=\tanh(a)=\frac{e^a-e^{-a}}{(e^a+e^{-a})}$, then $h'(a)$ is $1-h(a)^2$.
-
-Now we consider a node $j$ which is an internal node, that feeds into nodes indexed by $k$. The loss could be:
-\begin{equation}
-\delta_j=\frac{\partial J}{\partial a_j}=\sum_k \frac{\partial J}{\partial a_k}\frac{\partial a_k}{\partial a_j}=\sum_k \delta_k \frac{\partial a_k}{\partial a_j}.
-\end{equation}
-We index nodes that feed into node $k$ rather than $j$ with $i$:
-\begin{equation}
-a_k=\sum_i w_{ik}z_i=\sum_i w_{ik}h(a_i).
-\end{equation}
-Then we have $\frac{\partial a_k}{\partial a_j}$ as:
-\begin{equation}
-\frac{\partial a_k}{\partial a_j}=w_{jk}h'(a_j)
-\end{equation}
-and the delta value for node $j$ is:
-\begin{equation}
-\delta_j = h'(a_j)\sum_k \delta_k w_jk.
-\label{eq:delta scaler}
-\end{equation}
-
-For a leaf node $x_j$ we could calculate the partial derivative as well:
-\begin{equation}
-\frac{\partial J}{\partial x_j}=\sum_k \delta_k w_{jk}.
-\end{equation}
-
-Hence, the backpropagation algorithm is as follows:
-\begin{itemize}
-  \item Step 1: compute $\delta_k$ for all output node $k$.
-  \item Step 2: Working backwards, for other nodes $j$ compute $\delta_j$ with Equation~\ref{eq:delta scaler}
-  \item Step 3: Compute $\frac{\partial J}{\partial w_{ij}}=\delta_j z_i$
-  \end{itemize}
-\subsection{Numerical differentiation}
 \subsection{Back-propagation for vector-valued nodes}
+The complete loss function $J$ is consisted of error of reconstruction $E_{rec}$ or $E_1$ and error of prediction $E_2$:
+\begin{align}
+J=\frac{1}{N}\sum_{s,t}E(s,t;\theta)+\frac{\lambda}{2}||\theta||^2\\
+=\sum_{k \in T(s)}\alpha E_1(k)+(1-\alpha)E_2(k)+\frac{\lambda}{2}||\theta||^2
+\end{align}
+where $\theta=<W^{(1)},b^{(1)},W^{(2)},b^{(2)},W^{(label)},Leaves>$. As we calculate, the partial derivative of the loss function $J$ with respect to parameters $\theta$ is equal to:
 \begin{equation}
-J = -\sum_{i=1}^{q}t_i\log{r_i}
-\end{equation}
-\begin{equation}
-r = softmax(W^{label}x_r)
+\frac{\partial J}{\partial \theta}=\frac{1}{N}\sum_{s,t}\frac{\partial E(s,t;\theta)}{\partial \theta}+\lambda \theta
 \end{equation}
 
-where $x_r$ is a vector in $\mathbb{R}^d$ and $W^{label}$ is a matrix in $\mathbb{R}^{q\times d}$. In addition, r is a vector in $\mathbb{R}^q$, where $r_j$ is equal to:
+We have different activation and values in the network:
 \begin{equation}
-r_j=f_j((W^{label}x_r)_1,(W^{label}x_r)_2,\ldots,(W^{label}x_r)_q)=\frac{e^{(W^{label}x_r)_j}}{\sum_{i=1}^{q}e^{(W^{label}x_r)_j}}
+p=h(a)=h([W^{(1)} b^{(1)}][c_1;c_2;1])
+\end{equation}
+\begin{equation}
+e=[\hat{c}_1;\hat{c}_2]=[W^{(2)} b^{(2)}][p;1]
+\end{equation}
+
+\begin{equation}
+r = softmax(a^{output})=softmax([W^{label} b^{label}][p_r;1])
+\end{equation}
+where $r$ is a vector in $\mathbb{R}^q$ (the number of classes is $q$), and $r$ is the predicted probabilities for the classes. Here $p_r$ is the meaning vector for the output node, and $W^{label}$ is a matrix in $\mathbb{R}^{q\times d}$.
+
+We can concatenate $W^{(1)}$ with $b^{(1)}$ and we can concatenate $W^{(2)}$ with $b^{(2)}$:
+\begin{equation}
+W^{(1*)}=[W^{(1)} b^{(1)}]
+\end{equation}
+\begin{equation}
+W^{(2*)}=[W^{(2)} b^{(2)}]
+\end{equation}
+
+Softmax is not a point-wise function, and $r_j$ is equal to:
+
+\begin{equation}
+r_j=f_j((W^{label}p_r)_1,(W^{label}p_r)_2,\ldots,(W^{label}p_r)_q)=\frac{e^{(W^{label}p_r)_j}}{\sum_{i=1}^{q}e^{(W^{label}p_r)_j}}
 \end{equation}
 
 \begin{equation}
 r =
 \begin{pmatrix}
-  f_1(\sum_{j=1}^{d}W^{label}_{1j} x_{r_j}, \sum_{j=1}^{d}W^{label}_{2j}x_{r_j},\ldots, \sum_{j=1}^{d}W^{label}_{qj}x_{r_j})\\
-   f_2(\sum_{j=1}^{d}W^{label}_{1j}x_{r_j}, \sum_{j=1}^{d}W^{label}_{2j}x_{r_j},\ldots, \sum_{j=1}^{d}W^{label}_{qj}x_{r_j}) \\
+  f_1(\sum_{j=1}^{d}W^{label}_{1j} p_{r_j}, \sum_{j=1}^{d}W^{label}_{2j}p_{r_j},\ldots, \sum_{j=1}^{d}W^{label}_{qj}p_{r_j})\\
+   f_2(\sum_{j=1}^{d}W^{label}_{1j}p_{r_j}, \sum_{j=1}^{d}W^{label}_{2j}p_{r_j},\ldots, \sum_{j=1}^{d}W^{label}_{qj}p_{r_j}) \\
   \vdots  \\
-    f_q(\sum_{j=1}^{d}W^{label}_{1j}x_{r_j}, \sum_{j=1}^{d}W^{label}_{2j}x_{r_j},\ldots, \sum_{j=1}^{d}W^{label}_{qj}x_{r_j})\\
+    f_q(\sum_{j=1}^{d}W^{label}_{1j}p_{r_j}, \sum_{j=1}^{d}W^{label}_{2j}p_{r_j},\ldots, \sum_{j=1}^{d}W^{label}_{qj}p_{r_j})\\
  \end{pmatrix}
 \end{equation}
- So we could consider $a^{output}=W^{label}x_r$ as, which is a vector in $\mathbb{R}^q$ and rewrite the r as:
+ So we could consider $a^{output}=W^{label}p_r$ as, which is a vector in $\mathbb{R}^q$ and rewrite the r as:
  \begin{equation}
  r=
  \begin{pmatrix}
@@ -213,13 +188,41 @@ r =
 \end{equation}
 Now, we want $\frac{\partial J}{\partial W^{(1)}_{i,j}}$, which is not explicitly related to loss function $J$. We could write:
 \begin{equation}
-x_r=h(W^{(1)}[c_1;c_2]+b^{(1)}])
+p_r=h(W^{(1)}[c_1;c_2]+b^{(1)}])
 \end{equation} 
 where $h$ is a pointwise highly nonlinear function. Now we could have:
+
+We need the partial derivatives of the loss function with respect to parameters:
 \begin{equation}
-\frac{\partial J}{\partial W^{(1)}_{i,j}}=\frac{\partial J}{\partial a^{(r)}_i}\frac{\partial a^{(r)}_i}{\partial W^{(1)}_{i,j}}=\delta_i [c_1;c_2]_j
+\frac{\partial J}{\partial W^{(1*)}_{ij}} = \frac{\partial J}{\partial a_i}\frac{\partial a_i}{\partial W^{(1*)}_{ij}}=\delta_i \frac{\partial a_i}{\partial W^{(1*)}_{ij}}
 \end{equation}
-where $\delta_i=\frac{\partial J}{\partial a^{(r)}_i}$ contains all nonlinearity. Now we could write
+\begin{equation}
+\frac{\partial a_i}{\partial W^{(1*)}_i}=[c_1;c_2;1]^T
+\end{equation}
+\begin{equation}
+\frac{\partial J}{\partial W^{(2*)}_{ij}} = \frac{\partial J}{\partial e_i}\frac{\partial e_i}{\partial W^{(2*)}_{ij}}=\gamma_i \frac{\partial e_i}{\partial W^{(2*)}_{ij}}
+\end{equation}
+\begin{equation}
+\frac{\partial e_i}{\partial W^{(2*)}_i}=[x_p;1]^T
+\end{equation}
+\begin{equation}
+\frac{\partial J}{\partial W^{label}_{ij}} = \frac{\partial J}{\partial a^{output}_i}\frac{\partial a^{output}_i}{\partial W^{label}_{ij}}=\zeta_i \frac{\partial a^{output}_i}{\partial W^{label}_{ij}}
+\end{equation}
+\begin{equation}
+\frac{\partial a^{output}_i}{\partial W^{label}}=[x_r;1]^T
+\end{equation}
+
+We want to calculate $\gamma_i$ which just related to error of reconstruction, $E_1$:
+\begin{equation}
+\gamma_i=\frac{\partial J}{\partial e_i} = \alpha\frac{n_1}{n_1+n_2}2(c_1-\hat{c}_1)^T(-\frac{\partial \hat{c}_1}{\partial e_i})+\alpha\frac{n_2}{n_1+n_2}2(c_2-\hat{c}_2)^T(-\frac{\partial \hat{c}_2}{\partial e_i})
+\end{equation}
+\begin{equation}
+\frac{\partial [\hat{c}_1;\hat{c}_2]}{\partial e_i}=1
+\end{equation}
+\begin{equation}
+\gamma_i=-\alpha[\frac{n_1}{n_1+n_2}2(c_1-\hat{c}_1);\frac{n_2}{n_1+n_2}2(c_2-\hat{c}_2)]
+\end{equation}
+where $\delta_i=\frac{\partial J}{\partial a^{(r)}_i}$ contains all nonlinearity. Now we could write:
 \begin{equation}
 \frac{\partial J}{\partial a^{(r)}_i}= \sum_{k=1}^q\frac{\partial J}{\partial r_k}\frac{\partial r_k}{\partial a^{(r)}_i}
 \end{equation}
@@ -227,114 +230,117 @@ $\frac{\partial J}{\partial r_k}=\frac{-t_k}{r_k}$, and we want $\frac{\partial 
 \begin{equation}
 \frac{\partial r_k}{\partial a^{(r)}_i}=\frac{\partial f_k}{\partial a^{(r)}_i}=\sum_{t=1}^{q}\frac{\partial f_k}{\partial a^{output}_{t}}\frac{\partial a^{output}_t}{\partial a^{(r)}_i}
 \end{equation}
-Now we can calculate $\frac{\partial f_k}{\partial a^{output}_{t}}$ and $\frac{\partial a^{output}_t}{\partial a^{(r)}_i}$ separately. if $t=k$:
+
+The output node with values $r$, the contribution to J is with the error of classification $E_2$.
+
 \begin{equation}
-\frac{\partial f_k}{\partial a^{output}_{k}}=r_k(1-r_k)
+\zeta_i=\frac{\partial J}{\partial a^{output}_i}=(1-\alpha)\frac{\partial }{\partial a^{output}_i}\sum_{l=1}{q}t_l\log{r_l}
 \end{equation}
-and if $t\neq k$
+If $l=k$:
 \begin{equation}
-\frac{\partial f_k}{\partial a^{output}_{t}}=-r_kr_t
+\frac{\partial f_i}{\partial a^{output}_{i}}=r_i(1-r_i)
+\end{equation}
+and if $l\neq i$
+\begin{equation}
+\frac{\partial f_i}{\partial a^{output}_{l}}=-r_ir_l
+\end{equation}
+So we could calculate $\zeta_i$ as:
+\begin{equation}
+\zeta_i = -(1-\alpha)\sum_{l,l\neq i}^q\frac{t_i}{r_i}(-r_lr_i)-(1-\alpha)\frac{r_i}{1-r_i}=(1-\alpha)(r_i-t_i)
+\end{equation}
+
+For the internal values $p$, they contribute to loss $J$ through the $[\hat{c}_1;\hat{c}_2]$, $r$:
+
+\begin{align}
+\delta_i=\frac{\partial J}{\partial a_i}=\sum_{k=1}^{d}\frac{\partial J}{\partial a_k}\frac{\partial a_k}{\partial a_i}+\sum_{k=1}^{2d}\frac{\partial J}{\partial e_k}\frac{\partial e_k}{\partial a_i}+sum_{k=1}^{q}\frac{\partial J}{\partial a^{output}_k}\frac{\partial a^{output}_k}{\partial a_i} \\
+= \sum_{k=1}^{d}\delta_k\frac{\partial a_k}{\partial a_i}+\sum_{k=1}^{2d}\gamma_k\frac{\partial e_k}{\partial a_i}+sum_{k=1}^{q}\zeta_k\frac{\partial a^{output}_k}{\partial a_i}
+\end{align}
+Now we need to compute $\frac{\partial a_k}{\partial a_i}$, $\frac{\partial a^{output}_k}{\partial a_i}$, and $\frac{\partial e_k}{\partial a_i}$:
+\begin{equation}
+\frac{\partial a_k}{\partial a_i}=\frac{\partial}{\partial a_i}[W^{(1*)}[\ldots;f(a);\ldots;1]]_k=V_{ki}f'(a_i)
+\end{equation}
+where $V_{ki}$ is the part of $W^{(1*)}$ that multiplies a.
+
+\begin{equation}
+\frac{\partial e_k}{\partial a_i}=\frac{\partial}{\partial a_i}[W^{(2*)}[f(a);1]]_k = W^{(2*)}_{ki}f'(a)
 \end{equation}
 \begin{equation}
-\frac{\partial a^{output}_t}{\partial a^{(r)}_i}=\frac{\partial}{\partial a^{(r)}_i}\sum_{j=1}^{d}W^{label}_{t,j}x_{r_j}
+\frac{\partial a^{output}_k}{\partial a_i}=\frac{\partial }{\partial a_i}[W^{label}[f(a);1]]_k=W^{label}_{ki}f'(a)
 \end{equation}
-If we write $x_{r_j}=h(W^{(1)}[c_1;c_2]+b^{(1)})_j=h(a^{(r)}_j)$, and consider $a^{(r)}=(W^{(1)}[c_1;c_2]+b^{(1)})$ so if $j=i$:
-\begin{equation}
-\frac{\partial x_{r_j}}{\partial a^{(r)}_i}= h'(a^{(r)})_i
-\end{equation}
-and if $j\neq i$, $\frac{\partial x_{r_j}}{\partial a^{(r)}_j}=0$. So 
-\begin{equation}
- \frac{\partial a^{output}_t}{\partial a^{(r)}_i}=W^{label}_{t,i}h'(a^{(r)})_i
-\end{equation}
-So we could write $\delta_i$ as:
-\begin{equation}
-\delta_i=\sum_{k=1}^q \frac{-t_k}{r_k}\{\sum_{s=1}^q (r_s(1-r_s) \delta(s-k)-r_kr_s + r_s^2 \delta(s-k))(W^{label}_{s,i}h'(a^{(r)}_i))\}
-\end{equation}
-Now we want to calculate $\delta_j=\frac{\partial J}{\partial a_j}$ for internal nodes. If consider the nodes that node $j$ feed into them as $a^k$ we could write:
-\begin{equation}
-\delta_j=\frac{\partial J}{\partial a_j}=\sum_{p=1}^d \frac{\partial J}{\partial a^k_p}\frac{\partial a^k_p}{\partial a_j}=\sum_{p=1}^d \delta^{k}_p \frac{\partial a^k_p}{\partial a_j}
-\end{equation}
-There are other nodes that feed into node $k$ e.g. node $m$:
-\begin{equation}
-a^k=W^{(1)}[h(a);h(m)]
-\end{equation}
-If we write the portion of matrix $W^{(1)}$ that multiplies $h(a)$ as $W^{(1,1)}$ (or $W^{(1,2)}$) we have:
-\begin{equation}
-\frac{\partial a^k_p}{a_i}=h'(a_i)W^{(1,1)}_{pi}
-\end{equation}
-So $\delta_j$ is equal to:
-\begin{equation}
-\delta_j = \sum_{p=1}^d \delta_p^kh'(a_i)W^{(1,1)}_{pi}.
-\label{eq:delta vector}
-\end{equation}
-So for the vector-valued, backpropagation algorithm we could write:
-\begin{itemize}
-\item Step 1: Compute the delta vector for each output node.
-\item Step 2: Working backwards, compute the delta vector for each non-output node using Equation~\ref{eq:delta vector}
-\item Step 3: For every node, let $\delta$ be its delta vector and let $q^1,\ldots,q^m$ be the values of the nodes that feeding into it. If $m=0$ the node is a leaf. Otherwise, $\frac{\partial J}{\partial W}$ is equal to:
-\begin{equation}
-\frac{\partial J}{\partial W}=\delta [q^1;\ldots;q^m]^T.
-\end{equation}
+\begin{align}
+\delta_i=\sum_{k=1}^{d}\delta_kV_{ki}f'(a_i)+\sum_{k=1}^{2d}\gamma_kW^{(2*)}_{ki}f'(a_i)+\sum_{k=1}^q \zeta_k W^{label}_{ki}f'(a_i)\\
+=f'(a_i)(\sum_{k=1}^{d}\delta_kV_{ki}+\sum_{k=1}^{2d}\gamma_kW^{(2*)}_{ki}+\sum_{k=1}^q \zeta_k W^{label}_{ki})
+\end{align}
+
 For the leaves we could write:
 \begin{equation}
-\frac{\partial J}{\partial x_j}=\sum_k \frac{\partial J}{\partial a_k}\frac{\partial a_k}{\partial x_j}=\sum_k \delta_k w_{jk}
-\end{equation}
-\end{itemize}
-\subsection{Calculating derivatives for error of reconstruction}
-Consider vector $C$ which is in $\mathbb{R}^{2d}$ be equal to the the vector producing by concatenating $c_1$ and $c_2$ each in $\mathbb{R}^d$ as the children of node $i$. We could concatenate the reconstructed vectors of node $i$ $z_1$ and $z_2$ each in $\mathbb{R}^d$ to build the vector $Z$ in $\mathbb{R}^{2d}$. The combining parameters are $W^{(1)}$ and $b^{(1)}$ and the reconstructing parameters are $W^{(2)}$ and $b^{(2)}$. Then we could write the relationships between them as:
-\begin{equation}
-Z = h(W^{(1)}C+b^{(1)})
-\end{equation}
-\begin{equation}
-\hat{C}=W^{(2)}Z+b^{(2)}=W^{(2)}h(W^{(1)}C+b^{(1)})+b^{(2)}
-\end{equation}
-We use a reconstruction error to train the neural network using $W^{(1)}$, $b^{(1)}$, $W^{(2)}$, and $b^{(2)}$. We could split the matrixes $W^{(1)}$ and $W^{(2)}$ in this way:
-\begin{equation}
-W^{(1)}=[W^{(1,1)}|W^{(1,2)}]
-\end{equation}
-where $W^{(1,1)}$ multiplies by $c_1$ and $W^{(1,2)}$ multiplies by $c_2$. In addition we could write $W^{(2)}$ as:
-\begin{equation}
-W^{(2)}=\begin{bmatrix}
-     W^{(2,1)} \\ \hline
-     W^{(2,2)}
-    \end{bmatrix}
-\end{equation} 
-where $W^{(2,1)}$ corresponds to $\hat{c}_1$ and it is multiplies by $z_1$ and $W^{(2,2)}$ corresponds to $\hat{c}_2$ and multiplies by $z_2$.
-
-If we write the error of reconstruction as:
-\begin{equation}
-E^{node}_{rec}=\frac{n_1}{n_1+n_2}||c_1-\hat{c}_1||^2+\frac{n_2}{n_2+n_1}||c_2-\hat{c}_2||^2
-\end{equation}
-now we want to calculate $\frac{\partial E^{node}_{rec}}{\partial W^{(1,1)}_{i,j}}$. We could write $\frac{n_1}{n_1+n_2}||c_1-\hat{c}_1||^2=\frac{n_1}{n_1+n_2}\sum_k{(c_1-\hat{c}_1)^2_k}$ so we have:
-\begin{align}
-\frac{\partial E^{node}_{rec}}{\partial W^{(1,1)}_{i,j}}=\frac{2n_1}{n_1+n_2}(\hat{c}_1-c_1)\frac{\partial}{\partial W^{(1,1)}_{i,j}}(\hat{c}_1-c_1)_{j}=\frac{2n_1}{n_1+n_2}\frac{\partial (\hat{c}_1)_j}{\partial W^{(1,1)}_{i,j}}
-\end{align}
-And $(\hat{c}_1)_j$ is equal to:
-\begin{equation}
-(\hat{c}_1)_j=\sum_{k}W^{(2,1)}_{j,k}h(W^{(1)}+b^{(1)})_k=\sum_kW^{(2,1)}_{j,k}h(a)_k
-\end{equation}
-So the partial derivative of $\frac{\partial (\hat{c}_1)_j}{\partial (W^{(1,1)}_{i,j})}$ mathematically is equal to:
-\begin{equation}
-\frac{\partial (\hat{c}_1)_j}{\partial (W^{(1,1)}_{i,j})}= W^{2,1}_{j,i}(\frac{\partial h(a_i)}{\partial a_i}.\frac{\partial a_i}{\partial W^{(1,1)}_{i,j}})=W^{(2,1)}_{j,i}h'(a_i)c_{i,j}
-\end{equation}
-
-Now we want to calculate $\frac{\partial E^{node}_{rec}}{\partial W^{(2,1)}_{i,j}}$:
-\begin{equation}
-\frac{\partial E^{node}_{rec}}{\partial W^{(2,1)}_{i,j}}=\frac{2n_1}{n_1+n_2}\frac{\partial (\hat{c}_1)_i}{\partial W^{(2,1)}_{i,j}}(\hat{c}_1-c_1)=\frac{2n_1}{n_1+n_2}h(a_j)
-\end{equation}
+\frac{\partial J}{\partial x_i}=\delta_{x_i
+}\end{equation}
 
 
+\subsection{Calculating derivatives for normalized vectors}
+We derive the above equation for unnormalized vectors. For the normalized vectors and function we have:
+\begin{equation}
+h(a)=\frac{\tanh(a)}{||\tanh(a)||}
+\end{equation}
+\begin{equation}
+f'(a)=
+\begin{bmatrix}
+sech^2(a_1) & \ldots & 0 \\
+\vdots & \ddots & \vdots \\
+0 & \ldots & sech^2(a_d) \\
+\end{bmatrix} \times 
+\begin{bmatrix}
+\frac{1}{||tanh(a)||}I-\frac{1}{||tanh(a)||^3}tanh(a)tanh(a)^T
+\end{bmatrix}
+\end{equation}
+\subsection{Summarizing Derivatives}
+for the output nodes $\hat{c}_1$, $\hat{c}_2$, and $r$:
+\begin{equation}
+\gamma = \frac{\partial J}{\partial e} = 
+\begin{bmatrix}
+-2\alpha\frac{n_1}{n_1+n_2}(c_1-\hat{c}_1);-2\alpha\frac{n_2}{n_1+n_2}(c_2-\hat{c}_2)
+\end{bmatrix}
+\end{equation}
+\begin{equation}
+\zeta = \frac{\partial J}{\partial a^{output}} = 
+(1-\alpha)(r-t)
+\end{equation}
+For the internal nodes,$p$ we have:
+\begin{equation}
+\delta = f'(a).
+\begin{bmatrix}
+W^{{(1*)}^T}\delta_q+W^{{(2*)}^T}\gamma+W^{{(label)}^T}\zeta+\frac{\partial E_rec(p,\hat{p})}{p}
+\end{bmatrix}
+\end{equation}
 
-\section{Design of Experiments}
+For the leaf nodes, $x$ we have:
+\begin{equation}
+\delta_x
+\begin{bmatrix}
+W^{{(1*)}^T}\delta_q+W^{{(label)}^T}\zeta+\frac{\partial E_rec(x,\hat{x})}{x}
+\end{bmatrix}
+\end{equation}
+So the derivatives for the parameters are equal to:
+\begin{equation}
+\frac{J}{W^{(1*)}}=\delta[c_1;c_2;1]^T
+\end{equation}
+\begin{equation}
+\frac{J}{W^{(2*)}}=\delta[p;1]^T
+\end{equation}
+\begin{equation}
+\frac{J}{W^{(label)}}=\delta[p;1]^T
+\end{equation}
 
+We could calculate the numerical gradients using the following equation and then compare it with our results above:
+\begin{equation}
+\frac{\partial J}{\partial \theta}=\frac{J(\theta+\epsilon)-J(\theta-\epsilon)}{2\epsilon}+O(\epsilon^2)
+\end{equation}
+\section{Design of Experiment}
 \subsection{Dataset Selection}
-
 \subsection{Harmonic Mean  as a Measures for Goodness-of-Fit}
 \subsection{Hyperparameters Selection}
-
 \section{Results}
-
-
 \subsection{Classic400}
 \subsection{DailyKOS}
 
