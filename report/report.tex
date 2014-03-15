@@ -99,7 +99,35 @@ We can define an optimal tree to be the one that minimizes the total error. This
 
 The greedy algorithm is as follows: first, we consider all $n-1$ pairs of neighboring words. Then we find the best pair based on reconstruction error with smallest error. Now omit their combination, and find the best pair based on remaining pairs. 
 
-A small change in the parameter values either causes no change in the optimal tree obtained by greedy algorithm or a jump to a different tree. Generally, gradient descent could cause cycling between two or more different trees, without convergence, while LBFGS would converge smoothly. 
+A small change in the parameter values either causes no change in the optimal tree obtained by greedy algorithm or a jump to a different tree. Generally, gradient descent could cause cycling between two or more different trees, without convergence, while LBFGS would converge smoothly.
+
+\begin{algorithm}[h!]
+\# Input: Training Examples $<x_1, x_2, \ldots, x_n>$\\ 
+\# Output: Optimal Tree T\\
+Nodes=$\{x_1,x_2,\ldots,x_n\}$\\
+\While{$Nodes.remaining>1$}{
+$MinErrorFound = \inf$\\
+$j=-1$\\
+ConcatenatingNode = $null$\\
+\For{from $i=1$ to $i=Nodes.remaining-1$}{
+Compute $p\leftarrow h(W^{(1)}[c_1;c_2]+b^{(1)})$\\
+Compute $[\hat{c}_1;\hat{c}_2] \leftarrow W^{(2)}p+b^{2}$\\
+$Error \leftarrow E_1([c_1;c_2],[\hat{c}_1;\hat{c}_2])$\\
+\If{$Error<MinErrorFound$}{
+MinErrorFound $\leftarrow$ $Error$\\
+$j \leftarrow i$
+ConcatenatingNode $\leftarrow p$
+}
+}
+ConcatenatingNode.leftChild $\leftarrow$ $Nodes(j)$\\
+ConcatenatingNode.rightChild $\leftarrow$ $Nodes(j+1)$\\
+Nodes $\leftarrow Nodes-\{Nodes(j), Nodes(j+1)\}+\{ConcatenatingNode\}$
+}
+$T.root$ $\leftarrow$ ConcatenatingNode
+\caption{Constructing the Tree using Greedy Algorithm}
+\label{algorithm tree}
+\end{algorithm}
+ 
 \subsection{Using meaning to predict labels}
 We can have a target value rather than target meaning for a sentence to be predicted. For example, positivity or negativity of the sentence, which is binary. 
 
@@ -336,6 +364,25 @@ We could calculate the numerical gradients using the following equation and then
 \begin{equation}
 \frac{\partial J}{\partial \theta}=\frac{J(\theta+\epsilon)-J(\theta-\epsilon)}{2\epsilon}+O(\epsilon^2)
 \end{equation}
+\begin{algorithm}[h!]
+\# Input: Training Examples $<x_1, x_2, \ldots, x_n>$\\ 
+\# Output: Training Model\\$\theta=<W^{(1)},b^{(1)},W^{(2)},b^{(2)},W^{label},Leaves>$\\ 
+\#Initialization
+Initialize word meaning vectors $x_i \sim \mathcal{N}(0,\sigma^2)$\\
+Initialize matrices $W^{(1)}$, $W^{(2)}$, $W^{label}, b^{1},b^{2}$ randomly.\\
+\While{Not Converged or Exceeds the Maximum Number of Iteration}{
+Initialize Gradient $\bigtriangledown J \leftarrow 0$
+\For{all $x_i$ }{
+Compute $Tree=RAE_{\theta}(x_i)$	\\
+	Compute Gradient  $\bigtriangledown J_i \leftarrow \frac{\partial J(x_i)}{\partial \theta}$\\
+	Update Total Gradient $\bigtriangledown J \leftarrow \bigtriangledown J + \bigtriangledown J_i$
+	}
+Update $\theta$ $ \leftarrow$ $\frac{1}{N}$ $\bigtriangledown$ $J+\lambda \theta$}
+\caption{Training the Recursive Autoencoder}
+\label{algorithm RA}
+\end{algorithm}
+
+
 \section{Design of Experiment}
 \subsection{Dataset Selection}
 \subsection{Harmonic Mean  as a Measures for Goodness-of-Fit}
