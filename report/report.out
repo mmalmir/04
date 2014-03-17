@@ -1,0 +1,17 @@
+\BOOKMARK [1][-]{section.1}{Abstract}{}% 1
+\BOOKMARK [1][-]{section.2}{Introduction}{}% 2
+\BOOKMARK [1][-]{section.3}{Design and Analysis of Algorithm}{}% 3
+\BOOKMARK [2][-]{subsection.3.1}{Recursive definition of meaning}{section.3}% 4
+\BOOKMARK [2][-]{subsection.3.2}{Autoencoders}{section.3}% 5
+\BOOKMARK [2][-]{subsection.3.3}{ Selecting a tree structure}{section.3}% 6
+\BOOKMARK [2][-]{subsection.3.4}{Using meaning to predict labels}{section.3}% 7
+\BOOKMARK [2][-]{subsection.3.5}{Back-propagation for vector-valued nodes}{section.3}% 8
+\BOOKMARK [2][-]{subsection.3.6}{Calculating derivatives for normalized vectors}{section.3}% 9
+\BOOKMARK [2][-]{subsection.3.7}{Summarizing Derivatives}{section.3}% 10
+\BOOKMARK [1][-]{section.4}{Design of Experiment}{}% 11
+\BOOKMARK [1][-]{section.5}{Results}{}% 12
+\BOOKMARK [2][-]{subsection.5.1}{Gradient Check}{section.5}% 13
+\BOOKMARK [2][-]{subsection.5.2}{Convergence of Model Training}{section.5}% 14
+\BOOKMARK [2][-]{subsection.5.3}{Recongition Performance on Test Set}{section.5}% 15
+\BOOKMARK [2][-]{subsection.5.4}{Most positive and most negative words}{section.5}% 16
+\BOOKMARK [1][-]{section.6}{Discussion}{}% 17
