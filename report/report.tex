@@ -39,100 +39,83 @@ Method of Learning Meanings for Sentences\\  Learning Algorithms, Project 4}
 \author{Mohsen Malmir, Erfan Sayyari}
 \maketitle
 
-\section*{Abstract}
-In this paper, we develop a recursive auto encoder neural network for recognizing sentence level sentiment. A difficulty arises when input to neural networks is text sentence. In this paper, we choose a dynamic representation for sentences that is derived greedily to minimize the reconstruction error. This sentence level representation dictates the form of shape of the neural network. We also adapt a flexible representation for words that resembles the meaning of that word in a low dimensional space. The word representations  update as recognition error back propagates through the auto-encoder neural network. We demonstrate the performance of the proposed model on the movie review dataset \cite{pang2005}. This is a dataset that contains "positive" and "negative" reviews of movies, each comprised of one or more sentences. Our model can produce comparable results on this dataset.
+\section{Abstract}
 
 \section{Introduction}
-One of the main challenges in text-related applications of machine learning is the representation of the data. In applications such as topic modeling, an input corpus is represented by a bag-of-words model, which ignores the basic property that comprises the text: order of the words. One way to deal with this is to use \emph{n-grams}, which builds a representation of the text based on n-consecutive words in sentences. However, to avoid the curse of dimensionality, this approach is applied only with small values of n, which is insufficient in the applications such as extracting meaning of the text.
 
-With increasing volume and importance of online reviews, predicting \emph{sentiment} is becoming crucial for understanding the user generated content on websites. The baseline method for this task is to use a bag-of-words representation \cite{pang2002}. These methods fail to capture the sentiment properly, as they ignore words order, a crucial component in analyzing text. For example in reviews about a movie, "A good movie from a bad director" has actually positive sentiment, but "A bad movie from a good director" has negative sentiment, considering the target is reviews about the movie.
+\section{Design and Analysis of Algorithm}
 
-In this paper, we develop a representation for text sentences that is based on individual words \emph{meanings}. The meaning of sentence is constructed based on the meaning of individual words and their order in the sentence. This requires representation of meaning in someway, however is no standard way to do this without falling into philosophical issues. We choose a $d$-dimensional real valued vector for to represent meaning of parts of text. A good candidate to combine the meaning of words to get sentence level meaning is to use the sentence's parse tree. However this requires use of some external text processing package which means the results can't be generalized to other languages. In this paper, we introduce a greedy approach to combine meanings of parts of text based on the concept of auto encoder neural network. The benefits of this approach is its speed and that it can be generalized to other languages with no extra effort. We show that this greedy method is capable of producing state of the art results for sentiment prediction task on a movie review dataset.
+\subsection{Recursive definition of meaning}
+In the context of deep learning to represent the semantic content of sentences, we need to represent each word by a vector, and then represent their relative relation by a tree. We use binary tree representation and each word is a leaf node of the tree, and there are $n-1$ internal nodes, where $n$ is the length of the sentence. Each of the internal nodes shows the phrase of two or more consecutive words. To represent the meaning of each node we use a vector of $\mathbb{R}^d$.
 
-The main contributions of this paper are introducing a compositional structure to represent meaning of text and developing a greedy method to implement this structure. A recursive auto encoder neural network is used to combine the meanings of parts of sentence by minimizing the reconstruction error. At the top level, meaning of sentence is used in a \emph{softmax} classifier to predict the sentiment. We show that this model can achieve state-of-the-art performance on sentiment prediction of the movie review dataset.
+We use a random initialization to represent the meaning of each node in $\mathbb{R}^d$. Each random vector is produced from a Gaussian of dimension $d$ with zero mean and diagonal covariance matrix $\sigma^2I$ independent from each other. 
 
-\section{Proposed Model}
-\subsection{Overal Architecture}
-An exemplar architecture of the proposed model is shown in figure \ref{figRAE}. In this figure, the input sentence has 4 words which are shown in the bottom level of the network with blue nodes. Each word is represented by a $d$-dimensional vector representing its meaning. The orange nodes indicate the composition nodes which are constructed by \emph{encoding} the meaning of two words of parts of sentence. Matrix $W^1$ with size $2d \times d$ at each orange node indicates the meaning-composition stage of the network. For the composition of meanings to be appropriate, a \emph{reconstruction} stage is added that is shown by violet nodes. Matrix $W^2$ with size $d\times 2d$ is used to reconstruct the original meaning vectors from a composite meaning. Note that the same matrices are used in all levels of encoding and reconstruction in the network. A prediction stage is added to the top level meaning node of the network, shown in green. For a target value of dimensionality $k$, a prediction matrix $W^{label}$ with size $d \times k$ is used which transforms the meaning to the input of a softmax function with $k$ target classes.
-
-\begin{figure}[ht!]
-\centering
-\includegraphics[width=.8\textwidth]{raenet.pdf}
-\caption{An exemplar schematic diagram of recursive auto-encoder network developed in this paper. Blue nodes indicate the words of the input sentence, the orange nodes indicate the intermediate coding of meaning of parts of sentence. The violet nodes are the reconstruction of input nodes, and the green node is the predicted target. The weight matrices for encoding, reconstruction and label prediction are indicated correspondingly by $W^1$, $W^2$ and $W^{label}$. }
-\label{figRAE}
-\end{figure}
-
-
-A more detailed view of the encoding and reconstruction stages is shown in figure \ref{figEncodingDecoding}. This is called an auto-encoder network. The goal of encoding is to produce a $d$-dimensional representation $Z$ from two $d$-dimensional meaning vectors, shown by $X$ and $Y$. The encoded representation $Z$ is calculated by,
+To obtain the meaning of each internal node (say node $k$), rather than leaf nodes, we use the following equation:
 \begin{equation}
-Z = h(W^1 [X;Y] + b^1)
-\label{eqEncoding}
+x_k=h(W[x_i;x_j]+b)
 \end{equation}
-where $W^1$ is a $d\times 2d$ matrix, $b^1$ is a $d\times 1$ vector, $h$ is a point-wise thrashing function $h: \mathbb{R}^d \rightarrow \mathbb{R}^d$ and $[X;Y]$ indicates the column-wise concatenation of vectors $X$ and $Y$, that is $X$ and $Y$ are $d\times 1$ vectors and $[X;Y]$ is a $2d\times 1$ vector. The purpose of encoding stage is to produce a representation that is the composite of meanings of individual elements of the sentence. By using only two inputs for encoding, we are putting constraints on the model that simplifies the implementation. One should note that though the meaning of a phrase is well defined in traditional view of meaning, longer expression's or sentence's meaning that is acquired in our model is only interpretable in the context of overall goal of the network, which is in this case predicting the sentiment.
+where $i$ and $j$ are children of node $k$, and $W$ is a matrix in $\mathbb{R}^{d\times2d}$ and $b$ is a vector in $mathbb{R}^d$. The function $h$ is a pointwise sigmoid-shaped function from $\mathbb{R}^d$ to the interval $[-1,+1]^d$.
 
-Having a composite meaning vector $Z$, a measure of goodness of encoding is to reconstruct the original meaning vectors by an inverse transformation. This is shown using blue lines and violet nodes in figure \ref{figEncodingDecoding}. Specifically, having vector $Z$, we can transform it back to reconstructions $X'$ and $Y'$ using,
+In the training stage, we need to learn parameters $W$ and $b$. Since our problem is a supervised method, we need a target value for the meaning of the sentences. We use the notation $x_r$ to represent the predicted meaning of the sentence (of the root node r). If the true target value of the sentence is $t$, the loss function could be for example $E=(t-x_r)^2$, and for training we need to minimize this error. To do minimization we need to compute $\frac{\partial{E}}{\partial{W}}$ and $\frac{\partial{E}}{\partial{b}}$ and use a stochastic gradient descent (SGD) algorithm to minimize $E$ for the all of sentences, or we can use LBFGS quasi-Newton method.  
+\subsection{Autoencoders}
+In the autoencoder approach, we want to change the goal of supervised learning to find the parameters $W$, $b$ automatically without training labels provided from the outside. We could consider the meaning of the node $x_k$ is equal to:
 \begin{equation}
-[X',Y'] = W^2 Z + b^2
-\label{eqReconst}
+x_k=h(W[x_i;x_j]+b).
 \end{equation}
-where $W^2$ is a $2d\times d$ matrix, $b^2$ is a $2d\times 1$ vector and $X'$ and $Y'$ are $d\times 1$ vectors. The encoding and decoding stages together comprise a single orange node in figure \ref{figRAE}. Note that the same parameters ($W^1,W^2,b^1,B^2$ and $h$) are used in different orange nodes of the tree. Starting from the lowest orange node, a compact meaning is derived from its inputs, which is then fed to the orange node in the next level to be combined with other compact meanings of the parts of sentence. This is repeated until a single $d$ dimensional vector representation is produced for the sentence. For now, consider that the structure of the tree is given. Later in this section, we will delve into the details of calculating the structure of tree for different sentences.
 
-\subsection{Reconstruction Error}
-The goal of the auto-encoder network is to produce  a compact representation of the inputs, which is good enough to be used to decode the original vectors. We define the \emph{reconstruction error} of the auto-encoder as,
+We represent two other variables, $z_i$ and $z_j$ such that:
 \begin{equation}
-E_{rec}(X,Y,X',Y') = \frac{n_X}{n_X+n_Y}||X-X'||^2+\frac{n_Y}{n_X+n_Y}||Y-Y'||^2
-\label{eqRecErr}
+[z_i;z_j]=Ux_k+c
 \end{equation}
-Here, $n_X$ and $n_Y$ are the length of the parts of the input sentence that are encoded in $X$ and $Y$ correspondingly. For leaf nodes, $n_X$ is equal to 1. For non-leaf nodes, $n_X = n_{lc} + n_{rc}$ where $n_{lc}$ and $n_{rc}$ are the corresponding $n$ for left and right child of $X$. We use the reconstruction error to train the parameters $W^1,W^2,b^1,b^2$.
-
-
-
-\begin{figure}[ht!]
-\centering
-\includegraphics[width=.8\textwidth]{autoencoder.pdf}
-\caption{Encoding and Decoding stages of the recursive auto-encoder network. There are two $d$-dimensional inputs to the network. The encoding part which is indicated by matrix $W^1$ and red-colored edges,  embeds the inputs to a $d$-dimensional representation. The decoding stage is represented by blue color edges and matrix $W^2$, aims to reconstruct the original inputs from the encoded representation. Only one column of $W^1$ and $W^2$ are shown for clarity.}
-\label{figEncodingDecoding}
-\end{figure}
-
-
-\subsection{Predicting Sentiment}
-We use the top level meaning to predict the sentiment of the sentence. This is indicated by the green edge and node in figure \ref{figRAE}. Let $Z$ denote the top-level meaning of the sentence, then
+where $U$ is a matrix in $\mathbb{R}^{2d\times d}$ and $c$ is a vector in $\mathbb{R}^{2d}$, where $z_i$ and $z_j$ are approximation reconstructions of the inputs $x_i$ and $x_j$, and $U$ and $c$ are additional parameters. So we can define a new loss as:
 \begin{equation}
-V = \text{softmax}(W^{label} Z)
+E=||x_i-z_i||^2+||x_j-z_j||^2=||[x_i;x_j]-Uh(W[x_i;x_j]+b)-c||^2.
 \end{equation}
-denotes the predicted sentiment for the input sentence. $W^{label}$ is a $K\times d$ matrix, which transforms the $d$-dimensional meaning vector into a $K$-dimensional vector. The softmax function for an input of size $K$ is defined as,
+
+For the whole sentence the error is the sum of error of reconstruction of all non-leaf nodes. So we can use this reconstruction error to learn $W$, $b$, $U$, and $c$ with no training labels provided from the outside. 
+
+This approach has two other refinements. In order not to train the system to the trivial solution which leads to zero error we need to justify the equations. The trivial solution is all the parameters equal to zero. So the error will be zero. In order to solve it we can normalize the equation for the meaning of $k^th$ node such that:
 \begin{equation}
-V_k = \frac{e^{W^{label}_{k,:}Z}}{\sum_{i=1}^K e^{W^{label}_{i,:}Z}}
+x_k = \frac{h(W[x_i;x_j]+b}{||h(W[x_i;x_j]+b||}.
 \end{equation}
-where $W^{label}_{j,:}$ indicates the $j$th row of the matrix $W^{label}$. Each training sentence is accompanied by a vector $T$ of length $K$ of target values. We use the cross entropy between the target value and the predicted value as a measure of error,
+This leads the $h$ function not to be pointwise anymore, and derivatives are much harder in this case.
+
+The other refinement is based on the intuition that the error of reconstruction of the longer phrases are much more important. Therefore, the definition of the loss for node $k$ is equal to:
 \begin{equation}
-E_{CE} (T,V|\theta) = -\sum_{i=1}^K -T_i \log V_k
-\label{eqCEErr}
+E_1(k)=\frac{n_i}{n_i+n_j}||x_i-z_i||^2+\frac{n_j}{n_i+n_j}||x_j-z_j||^2
 \end{equation}
-here, $\theta$ indicates the model. We use back propagation to update the model parameters.
+where $z_i$ and $z_j$ are as before, and $n_i$ and $n_j$ are how many words are covered by nodes $i$ and $j$.
+\subsection{ Selecting a tree structure}
+After training the parameters automatically, we will generate a method to reconstruct the tree automatically as well. For a given sentence, if $T$ be the set of non-leaf nodes of its binary tree, the error of the whole tree is equal to:
+\begin{equation}
+\sum_{k \in T}E_1(k).
+\end{equation}
 
-\subsection{Greedy Construction of Neural Network Structure}
-Up to now, we assumed that the tree structure of the neural network is given. In this section, we develop a greedy algorithm to construct this tree. In order to understand this step clearly, we should note that the tree structure dictates the way the meaning of sub-parts of each sentence are combined to produce the final meaning. There is no unique tree structure that can include the meaning combinations of sub-parts of all sentences. Therefore, each sentence should have a specific tree that is built based on its constituent parts. An appealing choice here is to use the parse trees of the sentences,  by using some 3rd party text parsing package. However, there is a subtlety we should be aware of: the optimal combination of meaning of sub-parts of a sentence depends on the application. Therefore, a parse tree for a sentence might not be the perfect solution to our problem.
+For a sentence of length $n$, there is a finite number of possible trees calculated from the Catalan number of $C_{n-1}$, where $C_n$ is:
+\begin{equation}
+C_n= {2n \choose n} -{ 2n\choose n+1}.
+\end{equation}
+We can define an optimal tree to be the one that minimizes the total error. This optimal tree can be found by the exhaustive search or we can find it by a greedy algorithm approximately. 
 
-In the greedy method we propose here, the reconstruction error in (\ref{eqRecErr}) is used to decide what sub-parts of a sentence to combine in each step. We start by individual words at the first level, then choose the two words to be combined that have the lowest reconstruction error, as given in (\ref{eqRecErr}). In the next level, the same step happen, except that the two combined sup-parts are replaced by the result of encoding, as given by (\ref{eqEncoding}). We repeat this step until a single meaning vector is calculating for the sentence. The exact algorithm is given in \ref{algGreedyTree}. Note that for a tree constructed in this way for a sentence of length $n$, there are $n$ leaf and $n-1$ non-leaf nodes.
+The greedy algorithm is as follows: first, we consider all $n-1$ pairs of neighboring words. Then we find the best pair based on reconstruction error with smallest error. Now omit their combination, and find the best pair based on remaining pairs. 
 
+A small change in the parameter values either causes no change in the optimal tree obtained by greedy algorithm or a jump to a different tree. Generally, gradient descent could cause cycling between two or more different trees, without convergence, while LBFGS would converge smoothly.
 
 \begin{algorithm}[h!]
-\# Input: meaning of words of the sentence $<x_1, x_2, \ldots, x_n>$\\ 
-\# Output: Optimal Tree $R$\\
+\# Input: Training Examples $<x_1, x_2, \ldots, x_n>$\\ 
+\# Output: Optimal Tree T\\
 Nodes=$\{x_1,x_2,\ldots,x_n\}$\\
 \While{$Nodes.remaining>1$}{
 $MinErrorFound = \inf$\\
 $j=-1$\\
 ConcatenatingNode = $null$\\
-\For{$i=1$ to $Nodes.remaining-1$}{
-Let $X,Y \leftarrow x_i,x_{i+1}$\\
-Compute $p\leftarrow h(W^{1}[X;Y]+b^{1})$\\
-Compute $[X';Y'] \leftarrow W^{2}p+b^{2}$\\
-$Error \leftarrow E_{rec}([X;Y],[X';Y'])$\\
+\For{from $i=1$ to $i=Nodes.remaining-1$}{
+Compute $p\leftarrow h(W^{(1)}[c_1;c_2]+b^{(1)})$\\
+Compute $[\hat{c}_1;\hat{c}_2] \leftarrow W^{(2)}p+b^{2}$\\
+$Error \leftarrow E_1([c_1;c_2],[\hat{c}_1;\hat{c}_2])$\\
 \If{$Error<MinErrorFound$}{
 MinErrorFound $\leftarrow$ $Error$\\
-$j \leftarrow i$\\
+$j \leftarrow i$
 ConcatenatingNode $\leftarrow p$
 }
 }
@@ -140,30 +123,52 @@ ConcatenatingNode.leftChild $\leftarrow$ $Nodes(j)$\\
 ConcatenatingNode.rightChild $\leftarrow$ $Nodes(j+1)$\\
 Nodes $\leftarrow Nodes-\{Nodes(j), Nodes(j+1)\}+\{ConcatenatingNode\}$
 }
-$R.root$ $\leftarrow$ ConcatenatingNode
-\caption{Greedy Algorithm For Building the Tree for a Sentence.}
-\label{algGreedyTree}
+$T.root$ $\leftarrow$ ConcatenatingNode
+\caption{Constructing the Tree using Greedy Algorithm}
+\label{algorithm tree}
 \end{algorithm}
+ 
+\subsection{Using meaning to predict labels}
+We can have a target value rather than target meaning for a sentence to be predicted. For example, positivity or negativity of the sentence, which is binary. 
 
-\subsection{Learning Model Parameters}
-To learn the parameters $W^1,W^2,b^1,b^2,W^{label}$, we use the reconstruction error (\ref{eqRecErr}) and cross entropy error (\ref{eqCEErr}). We define the error of sentence $x$ with the tree structure $R(x)$and target vector $T$ as a combination of these,
+Each node of the tree (say node $k$) has a meaning vector $x_k$, and we can add a linear model to each node to predict target value of each node. If the values of the predicted labels are binary, then linear model is a standard logistic regression classifier, and if there are more than two classes, the model is multinomial or multiclass logistic regression.
 
+Suppose that we have $r$ different discrete labels and $x_k$ be the meaning of node $k$. Then the vector of predicted probabilities of the label values is equal to:
 \begin{equation}
-E(R(x),T)=\sum_{k \in R(x)}\alpha E_{rec}(k)+(1-\alpha)E_{CE}(k,T)
+\bar{p}=softmax(Vx_k)
 \end{equation}
-where $k$ is over all nodes of the tree $R(x)$. For a non-leaf node $k$ in $R(x)$ with left child $X$ and right child $Y$, the reconstruction error is calculated using (\ref{eqReconst}) and (\ref{eqRecErr}). For leaf nodes, reconstruction error is 0. Cross entropy error for all nodes is calculated using back-propagation, which is described later. The objective function to minimize over training set $S=\{(x_1,T_1),(x_2,T_2),\ldots,(x_m,T_m)\} $ is,
-
+where $V$ is a matrix in $\mathbb{R}^{r\times d}$. If we have $\bar{t}$ to be the true binary vector of length $r$ of node $k$, then we can define squared error of the prediction as $||\bar{t}-\bar{p}||^2$, or we can define log loss as:
 \begin{equation}
-J=\frac{1}{m}\sum_{<x,T> \in S}E(R(x),T|\theta)+\frac{\lambda}{2}||\theta||^2
+E_2(k)=-\sum_{i=1}^{r}t_i\log{p_i}.
 \end{equation}
-where $\theta=<W^1,W^2,b^1,b^2,W^{(label)}>$. The partial derivative of the loss function $J$ with respect to parameters $\theta$ is,
+We predict the target values for all the internal nodes except leaf nodes. 
+
+If we consider a collection $S$ of $m$ labeled training sentences, then we could write the loss function as:
 \begin{equation}
-\frac{\partial J}{\partial \theta}=\frac{1}{m} \sum_{<x,T> \in S}\frac{\partial E(R(x),T|\theta)}{\partial \theta}+\lambda \theta
+J=\frac{1}{m}\sum_{<s,t> \in S}E(s,t,\theta)+\frac{\lambda}{2}||\theta||^2
+\end{equation}
+where $\theta=<W,b,U,c,V>$ is all the parameters of the model, and $\lambda$ is a regularization factor, and $E(s,t,\theta)$ is the total error for one sentence $s$ with label $t$ which is equal to:
+\begin{equation}
+E(s,t,\theta)=\sum_{k \in T(s)}\alpha E_1(k)+(1-\alpha)E_2(k)
+\end{equation}
+where $T(s)$ is the set of non-leaf nodes of the tree is constructed by the greedy algorithm for the sentence $s$. 
+
+In order to update the meaning of a node $x_n$, we can compute the derivative of the loss with respect to $x_n$ and update it. More particularly, to do this task we use the error of label targets $E_2$. We can write the general equation as:
+\begin{equation}
+\frac{\partial}{\partial x_n}\sum_{<s,t>\in S}\sum_{k \in T(s)}E_2(k).
+\end{equation}
+\subsection{Back-propagation for vector-valued nodes}
+The complete loss function $J$ is consisted of error of reconstruction $E_{rec}$ or $E_1$ and error of prediction $E_2$:
+\begin{align}
+J=\frac{1}{N}\sum_{s,t}E(s,t;\theta)+\frac{\lambda}{2}||\theta||^2\\
+=\sum_{k \in T(s)}\alpha E_1(k)+(1-\alpha)E_2(k)+\frac{\lambda}{2}||\theta||^2
+\end{align}
+where $\theta=<W^{(1)},b^{(1)},W^{(2)},b^{(2)},W^{(label)},Leaves>$. As we calculate, the partial derivative of the loss function $J$ with respect to parameters $\theta$ is equal to:
+\begin{equation}
+\frac{\partial J}{\partial \theta}=\frac{1}{N}\sum_{s,t}\frac{\partial E(s,t;\theta)}{\partial \theta}+\lambda \theta
 \end{equation}
 
-\subsection{Backpropagation}
 We have different activation and values in the network:
-
 \begin{equation}
 p=h(a)=h([W^{(1)} b^{(1)}][c_1;c_2;1])
 \end{equation}
@@ -174,7 +179,6 @@ e=[\hat{c}_1;\hat{c}_2]=[W^{(2)} b^{(2)}][p;1]
 \begin{equation}
 r = softmax(a^{output})=softmax([W^{label} b^{label}][p_r;1])
 \end{equation}
-
 where $r$ is a vector in $\mathbb{R}^q$ (the number of classes is $q$), and $r$ is the predicted probabilities for the classes. Here $p_r$ is the meaning vector for the output node, and $W^{label}$ is a matrix in $\mathbb{R}^{q\times d}$.
 
 We can concatenate $W^{(1)}$ with $b^{(1)}$ and we can concatenate $W^{(2)}$ with $b^{(2)}$:
@@ -276,24 +280,24 @@ So we could calculate $\zeta_i$ as:
 For the internal values $p$, they contribute to loss $J$ through the $[\hat{c}_1;\hat{c}_2]$, $r$:
 
 \begin{align}
-\delta_i=\frac{\partial J}{\partial a_i}=\sum_{k=1}^{d}\frac{\partial J}{\partial a_k}\frac{\partial a_k}{\partial a_i}+\sum_{k=1}^{2d}\frac{\partial J}{\partial e_k}\frac{\partial e_k}{\partial a_i}+sum_{k=1}^{q}\frac{\partial J}{\partial a^{output}_k}\frac{\partial a^{output}_k}{\partial a_i} \\
-= \sum_{k=1}^{d}\delta_k\frac{\partial a_k}{\partial a_i}+\sum_{k=1}^{2d}\gamma_k\frac{\partial e_k}{\partial a_i}+sum_{k=1}^{q}\zeta_k\frac{\partial a^{output}_k}{\partial a_i}
+\delta_i=\frac{\partial J}{\partial a_i}=\sum_{k=1}^{d}\frac{\partial J}{\partial a_k}\frac{\partial a_k}{\partial a_i}+\sum_{k=1}^{2d}\frac{\partial J}{\partial e_k}\frac{\partial e_k}{\partial a_i}+\sum_{k=1}^{q}\frac{\partial J}{\partial a^{output}_k}\frac{\partial a^{output}_k}{\partial a_i} \\
+= \sum_{k=1}^{d}\delta_k\frac{\partial a_k}{\partial a_i}+\sum_{k=1}^{2d}\gamma_k\frac{\partial e_k}{\partial a_i}+\sum_{k=1}^{q}\zeta_k\frac{\partial a^{output}_k}{\partial a_i}
 \end{align}
 Now we need to compute $\frac{\partial a_k}{\partial a_i}$, $\frac{\partial a^{output}_k}{\partial a_i}$, and $\frac{\partial e_k}{\partial a_i}$:
 \begin{equation}
-\frac{\partial a_k}{\partial a_i}=\frac{\partial}{\partial a_i}[W^{(1*)}[\ldots;f(a);\ldots;1]]_k=V_{ki}f'(a_i)
+\frac{\partial a_k}{\partial a_i}=\frac{\partial}{\partial a_i}[W^{(1*)}[\ldots;h(a);\ldots;1]]_k=V_{ki}h'(a_i)
 \end{equation}
 where $V_{ki}$ is the part of $W^{(1*)}$ that multiplies a.
 
 \begin{equation}
-\frac{\partial e_k}{\partial a_i}=\frac{\partial}{\partial a_i}[W^{(2*)}[f(a);1]]_k = W^{(2*)}_{ki}f'(a)
+\frac{\partial e_k}{\partial a_i}=\frac{\partial}{\partial a_i}[W^{(2*)}[h(a);1]]_k = W^{(2*)}_{ki}h'(a)
 \end{equation}
 \begin{equation}
-\frac{\partial a^{output}_k}{\partial a_i}=\frac{\partial }{\partial a_i}[W^{label}[f(a);1]]_k=W^{label}_{ki}f'(a)
+\frac{\partial a^{output}_k}{\partial a_i}=\frac{\partial }{\partial a_i}[W^{label}[h(a);1]]_k=W^{label}_{ki}h'(a)
 \end{equation}
 \begin{align}
-\delta_i=\sum_{k=1}^{d}\delta_kV_{ki}f'(a_i)+\sum_{k=1}^{2d}\gamma_kW^{(2*)}_{ki}f'(a_i)+\sum_{k=1}^q \zeta_k W^{label}_{ki}f'(a_i)\\
-=f'(a_i)(\sum_{k=1}^{d}\delta_kV_{ki}+\sum_{k=1}^{2d}\gamma_kW^{(2*)}_{ki}+\sum_{k=1}^q \zeta_k W^{label}_{ki})
+\delta_i=\sum_{k=1}^{d}\delta_kV_{ki}h'(a_i)+\sum_{k=1}^{2d}\gamma_kW^{(2*)}_{ki}h'(a_i)+\sum_{k=1}^q \zeta_k W^{label}_{ki}h'(a_i)\\
+=h'(a_i)(\sum_{k=1}^{d}\delta_kV_{ki}+\sum_{k=1}^{2d}\gamma_kW^{(2*)}_{ki}+\sum_{k=1}^q \zeta_k W^{label}_{ki})
 \end{align}
 
 For the leaves we could write:
@@ -308,7 +312,7 @@ We derive the above equation for unnormalized vectors. For the normalized vector
 h(a)=\frac{\tanh(a)}{||\tanh(a)||}
 \end{equation}
 \begin{equation}
-f'(a)=
+h'(a)=
 \begin{bmatrix}
 sech^2(a_1) & \ldots & 0 \\
 \vdots & \ddots & \vdots \\
@@ -332,9 +336,9 @@ for the output nodes $\hat{c}_1$, $\hat{c}_2$, and $r$:
 \end{equation}
 For the internal nodes,$p$ we have:
 \begin{equation}
-\delta = f'(a).
+\delta = h'(a).
 \begin{bmatrix}
-W^{{(1*)}^T}\delta_q+W^{{(2*)}^T}\gamma+W^{{(label)}^T}\zeta+\frac{\partial E_rec(p,\hat{p})}{p}
+W^{{(1*)}^T}\delta_q+W^{{(2*)}^T}\gamma+W^{{(label)}^T}\zeta+\frac{\partial E_rec(p,\hat{p})}{\partial p}
 \end{bmatrix}
 \end{equation}
 
@@ -342,23 +346,25 @@ For the leaf nodes, $x$ we have:
 \begin{equation}
 \delta_x
 \begin{bmatrix}
-W^{{(1*)}^T}\delta_q+W^{{(label)}^T}\zeta+\frac{\partial E_rec(x,\hat{x})}{x}
+W^{{(1*)}^T}\delta_q+W^{{(label)}^T}\zeta+\frac{\partial E_rec(x,\hat{x})}{\partial x}
 \end{bmatrix}
 \end{equation}
 So the derivatives for the parameters are equal to:
 \begin{equation}
-\frac{J}{W^{(1*)}}=\delta[c_1;c_2;1]^T
+\frac{\partial J}{\partial W^{(1*)}}=\delta[c_1;c_2;1]^T
 \end{equation}
 \begin{equation}
-\frac{J}{W^{(2*)}}=\delta[p;1]^T
+\frac{\partial J}{\partial W^{(2*)}}=\delta[p;1]^T
 \end{equation}
 \begin{equation}
-\frac{J}{W^{(label)}}=\delta[p;1]^T
+\frac{\partial J}{\partial W^{(label)}}=\delta[p;1]^T
 \end{equation}
 
-The proposed algorithm for training the model is given in algorithm \ref{algorithm RA}.
-
-\begin{algorithm}[ht!]
+We could calculate the numerical gradients using the following equation and then compare it with our results above:
+\begin{equation}
+\frac{\partial J}{\partial \theta}=\frac{J(\theta+\epsilon)-J(\theta-\epsilon)}{2\epsilon}+O(\epsilon^2)
+\end{equation}
+\begin{algorithm}[h!]
 \# Input: Training Examples $<x_1, x_2, \ldots, x_n>$\\ 
 \# Output: Training Model\\$\theta=<W^{(1)},b^{(1)},W^{(2)},b^{(2)},W^{label},Leaves>$\\ 
 \#Initialization
@@ -378,13 +384,6 @@ Update $\theta$ $ \leftarrow$ $\frac{1}{N}$ $\bigtriangledown$ $J+\lambda \theta
 
 
 \section{Design of Experiment}
-In this section, we perform a series of experiments to validate the proposed model. 
-We could calculate the numerical gradients using the following equation and then compare it with our results above:
-\begin{equation}
-\frac{\partial J}{\partial \theta}=\frac{J(\theta+\epsilon)-J(\theta-\epsilon)}{2\epsilon}+O(\epsilon^2)
-\end{equation}
-
-
 \subsection{Dataset Selection}
 \subsection{Harmonic Mean  as a Measures for Goodness-of-Fit}
 \subsection{Hyperparameters Selection}
@@ -407,12 +406,6 @@ APA
 
 \bibitem{wallach}
 Wallach, Hanna M., et al. "Evaluation methods for topic models." Proceedings of the 26th Annual International Conference on Machine Learning. ACM, 2009.
-
-\bibitem{pang2002}
-Pang, Bo, Lillian Lee, and Shivakumar Vaithyanathan. "Thumbs up?: sentiment classification using machine learning techniques." In Proceedings of the ACL-02 conference on Empirical methods in natural language processing-Volume 10, pp. 79-86. Association for Computational Linguistics, 2002.
-
-\bibitem{pang2005}
-Pang and L. Lee. 2005. Seeing stars: Exploiting class relationships for sentiment categorization with respect to rating scales. In ACL, pages 115Ð124.
 
 \end{thebibliography}
 
