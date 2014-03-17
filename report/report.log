@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.3-1.40.12 (TeX Live 2011) (format=pdflatex 2011.7.3)  17 MAR 2014 07:17
+This is pdfTeX, Version 3.1415926-2.3-1.40.12 (TeX Live 2011) (format=pdflatex 2011.7.3)  17 MAR 2014 09:38
 entering extended mode
  \write18 enabled.
  file:line:error style messages enabled.
@@ -415,11 +415,7 @@ Package: subcaption 2008/08/31 v1.0b Adding subcaptions (AR)
 Package hyperref Info: Option `colorlinks' set `true' on input line 32.
 Package hyperref Info: Option `breaklinks' set `true' on input line 32.
 
-(./report.aux
-
-LaTeX Warning: Label `tableTopWordsClassic' multiply defined.
-
-)
+(./report.aux)
 \openout1 = `report.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 35.
@@ -438,7 +434,8 @@ LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 35.
 LaTeX Font Info:    ... okay on input line 35.
 \AtBeginShipoutBox=\box39
 Package hyperref Info: Link coloring ON on input line 35.
- (/usr/local/texlive/2011/texmf-dist/tex/latex/hyperref/nameref.sty
+
+(/usr/local/texlive/2011/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2010/04/30 v2.40 Cross-referencing by name of section
 
 (/usr/local/texlive/2011/texmf-dist/tex/generic/oberdiek/gettitlestring.sty
@@ -529,17 +526,10 @@ LaTeX Font Info:    Try loading font information for U+msb on input line 41.
 
 (/usr/local/texlive/2011/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2009/06/22 v3.00 AMS symbols B
-)
-
-LaTeX Warning: Citation `pang2005' on page 1 undefined on input line 43.
-
-
-LaTeX Warning: Citation `pang2002' on page 1 undefined on input line 48.
-
-[1
+) [1
 
 {/usr/local/texlive/2011/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
-<raenet.pdf, id=87, 482.45555pt x 500.15431pt>
+<raenet.pdf, id=90, 482.45555pt x 500.15431pt>
 File: raenet.pdf Graphic file (type pdf)
  <use raenet.pdf>
 Package pdftex.def Info: raenet.pdf used on input line 60.
@@ -548,7 +538,7 @@ Package pdftex.def Info: raenet.pdf used on input line 60.
 
 LaTeX Warning: Text page 3 contains only floats.
 
-[3 <./raenet.pdf>] <autoencoder.pdf, id=124, 508.66351pt x 455.36604pt>
+[3 <./raenet.pdf>] <autoencoder.pdf, id=128, 508.66351pt x 455.36604pt>
 File: autoencoder.pdf Graphic file (type pdf)
 
 <use autoencoder.pdf>
@@ -565,42 +555,30 @@ LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-[12]
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [13]
-<gradError.pdf, id=315, 710.655pt x 398.48875pt>
+[12] <gradError.pdf, id=300, 710.655pt x 398.48875pt>
 File: gradError.pdf Graphic file (type pdf)
  <use gradError.pdf>
-Package pdftex.def Info: gradError.pdf used on input line 401.
+Package pdftex.def Info: gradError.pdf used on input line 395.
 (pdftex.def)             Requested size: 516.73007pt x 289.75732pt.
 
-<convergence.pdf, id=317, 1062.97125pt x 590.205pt>
+[13] <convergence.pdf, id=322, 1062.97125pt x 590.205pt>
 File: convergence.pdf Graphic file (type pdf)
  <use convergence.pdf>
-Package pdftex.def Info: convergence.pdf used on input line 411.
+Package pdftex.def Info: convergence.pdf used on input line 405.
 (pdftex.def)             Requested size: 516.73007pt x 286.9155pt.
 
-
-LaTeX Warning: No positions in optional float specifier.
-               Default added (so using `!tbp') on input line 421.
-
 [14 <./gradError.pdf>]
+Underfull \hbox (badness 10000) in paragraph at lines 433--434
 
-LaTeX Warning: `!h' float specifier changed to `!ht'.
+ []
 
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [15 <./convergence.pdf>]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 573.
- [16]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 573.
+[15 <./convergence.pdf>] [16]
+Missing character: There is no Ð in font cmr12!
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 580.
+ [17]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 580.
  (./report.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 573.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 580.
 
 
  *File List*
@@ -690,22 +668,16 @@ gradError.pdf    Graphic file (type pdf)
 convergence.pdf    Graphic file (type pdf)
  ***********
 
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 573.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 580.
 Package rerunfilecheck Info: File `report.out' has not changed.
-(rerunfilecheck)             Checksum: C2906B01312E798B8EF3EB672C249F60;1254.
-
-LaTeX Warning: There were undefined references.
-
-
-LaTeX Warning: There were multiply-defined labels.
-
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 573.
+(rerunfilecheck)             Checksum: 65C19A20A9B120E14DE1053543DBFAD5;1232.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 580.
  ) 
 Here is how much of TeX's memory you used:
- 10392 strings out of 493633
- 151393 string characters out of 3143378
- 278792 words of memory out of 3000000
- 13425 multiletter control sequences out of 15000+200000
+ 10396 strings out of 493633
+ 151440 string characters out of 3143378
+ 279048 words of memory out of 3000000
+ 13428 multiletter control sequences out of 15000+200000
  13059 words of font info for 50 fonts, out of 3000000 for 9000
  831 hyphenation exceptions out of 8191
  53i,18n,92p,1171b,580s stack positions out of 5000i,500n,10000p,200000b,50000s
@@ -723,10 +695,10 @@ ve/2011/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texliv
 e/2011/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/
 2011/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb></usr/local/texlive/2
 011/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on report.pdf (16 pages, 331684 bytes).
+Output written on report.pdf (17 pages, 335892 bytes).
 PDF statistics:
- 540 PDF objects out of 1000 (max. 8388607)
- 441 compressed objects within 5 object streams
- 143 named destinations out of 1000 (max. 500000)
+ 550 PDF objects out of 1000 (max. 8388607)
+ 450 compressed objects within 5 object streams
+ 144 named destinations out of 1000 (max. 500000)
  165 words of extra memory for PDF output out of 10000 (max. 10000000)
 

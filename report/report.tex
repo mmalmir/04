@@ -150,6 +150,7 @@ To learn the parameters $W^1,W^2,b^1,b^2,W^{label}$, we use the reconstruction e
 
 \begin{equation}
 E(R(x),T)=\sum_{k \in R(x)}\alpha E_{rec}(k)+(1-\alpha)E_{CE}(k,T)
+\label{eqError}
 \end{equation}
 where $k$ is over all nodes of the tree $R(x)$. For a non-leaf node $k$ in $R(x)$ with left child $X$ and right child $Y$, the reconstruction error is calculated using (\ref{eqReconst}) and (\ref{eqRecErr}). For leaf nodes, reconstruction error is 0. Cross entropy error for all nodes is calculated using back-propagation, which is described later. The objective function to minimize over training set $S=\{(x_1,T_1),(x_2,T_2),\ldots,(x_m,T_m)\} $ is,
 
@@ -161,18 +162,8 @@ where $\theta=<W^1,W^2,b^1,b^2,W^{(label)}>$. The partial derivative of the loss
 \frac{\partial J}{\partial \theta}=\frac{1}{m} \sum_{<x,T> \in S}\frac{\partial E(R(x),T|\theta)}{\partial \theta}+\lambda \theta
 \end{equation}
 
-\subsection{Backpropagation}\subsection{Back-propagation for vector-valued nodes}
-The complete loss function $J$ is consisted of error of reconstruction $E_{rec}$ or $E_1$ and error of prediction $E_2$:
-\begin{align}
-J=\frac{1}{N}\sum_{s,t}E(s,t;\theta)+\frac{\lambda}{2}||\theta||^2\\
-=\sum_{k \in T(s)}\alpha E_1(k)+(1-\alpha)E_2(k)+\frac{\lambda}{2}||\theta||^2
-\end{align}
-where $\theta=<W^{(1)},b^{(1)},W^{(2)},b^{(2)},W^{(label)},Leaves>$. As we calculate, the partial derivative of the loss function $J$ with respect to parameters $\theta$ is equal to:
-\begin{equation}
-\frac{\partial J}{\partial \theta}=\frac{1}{N}\sum_{s,t}\frac{\partial E(s,t;\theta)}{\partial \theta}+\lambda \theta
-\end{equation}
-
-We have different activation and values in the network:
+\subsection{Backpropagation}
+For different nodes in the network, we use the same notation to indicate the nonlinear activation function, 
 \begin{equation}
 p=h(a)=h([W^{(1)} b^{(1)}][c_1;c_2;1])
 \end{equation}
@@ -183,9 +174,7 @@ e=[\hat{c}_1;\hat{c}_2]=[W^{(2)} b^{(2)}][p;1]
 \begin{equation}
 r = softmax(a^{output})=softmax([W^{label} b^{label}][p_r;1])
 \end{equation}
-where $r$ is a vector in $\mathbb{R}^q$ (the number of classes is $q$), and $r$ is the predicted probabilities for the classes. Here $p_r$ is the meaning vector for the output node, and $W^{label}$ is a matrix in $\mathbb{R}^{q\times d}$.
-
-We can concatenate $W^{(1)}$ with $b^{(1)}$ and we can concatenate $W^{(2)}$ with $b^{(2)}$:
+where $r$ is the predicted probabilities for the target classes. Here $p_r$ is the meaning vector for the output node of the network. We concatenate $W^{(1)}$ with $b^{(1)}$ and  $W^{(2)}$ with $b^{(2)}$ to simplify the notation in the following analysis,
 \begin{equation}
 W^{(1*)}=[W^{(1)} b^{(1)}]
 \end{equation}
@@ -193,38 +182,38 @@ W^{(1*)}=[W^{(1)} b^{(1)}]
 W^{(2*)}=[W^{(2)} b^{(2)}]
 \end{equation}
 
-Softmax is not a point-wise function, and $r_j$ is equal to:
+We can write $r_j$, the $j$-th component of $r$ as,
 
 \begin{equation}
-r_j=f_j((W^{label}p_r)_1,(W^{label}p_r)_2,\ldots,(W^{label}p_r)_q)=\frac{e^{(W^{label}p_r)_j}}{\sum_{i=1}^{q}e^{(W^{label}p_r)_j}}
+r_j=f_j((W^{label}p_r)_1,(W^{label}p_r)_2,\ldots,(W^{label}p_r)_K)=\frac{e^{(W^{label}p_r)_j}}{\sum_{i=1}^{K}e^{(W^{label}p_r)_j}}
 \end{equation}
 
 \begin{equation}
 r =
 \begin{pmatrix}
-  f_1(\sum_{j=1}^{d}W^{label}_{1j} p_{r_j}, \sum_{j=1}^{d}W^{label}_{2j}p_{r_j},\ldots, \sum_{j=1}^{d}W^{label}_{qj}p_{r_j})\\
-   f_2(\sum_{j=1}^{d}W^{label}_{1j}p_{r_j}, \sum_{j=1}^{d}W^{label}_{2j}p_{r_j},\ldots, \sum_{j=1}^{d}W^{label}_{qj}p_{r_j}) \\
+  f_1(\sum_{j=1}^{d}W^{label}_{1j} p_{r_j}, \sum_{j=1}^{d}W^{label}_{2j}p_{r_j},\ldots, \sum_{j=1}^{d}W^{label}_{Kj}p_{r_j})\\
+   f_2(\sum_{j=1}^{d}W^{label}_{1j}p_{r_j}, \sum_{j=1}^{d}W^{label}_{2j}p_{r_j},\ldots, \sum_{j=1}^{d}W^{label}_{Kj}p_{r_j}) \\
   \vdots  \\
-    f_q(\sum_{j=1}^{d}W^{label}_{1j}p_{r_j}, \sum_{j=1}^{d}W^{label}_{2j}p_{r_j},\ldots, \sum_{j=1}^{d}W^{label}_{qj}p_{r_j})\\
+    f_K(\sum_{j=1}^{d}W^{label}_{1j}p_{r_j}, \sum_{j=1}^{d}W^{label}_{2j}p_{r_j},\ldots, \sum_{j=1}^{d}W^{label}_{Kj}p_{r_j})\\
  \end{pmatrix}
 \end{equation}
- So we could consider $a^{output}=W^{label}p_r$ as, which is a vector in $\mathbb{R}^q$ and rewrite the r as:
+
+Let $a^{output}=W^{label}p_r$ be a vector in $\mathbb{R}^K$. We can rewrite  $r$ as:
  \begin{equation}
  r=
  \begin{pmatrix}
- f_1(a^{output}_1,a^{output}_2,\ldots,a^{output}_q)\\
-  f_2(a^{output}_1,a^{output}_2,\ldots,a^{output}_q)\\
+ f_1(a^{output}_1,a^{output}_2,\ldots,a^{output}_K)\\
+  f_2(a^{output}_1,a^{output}_2,\ldots,a^{output}_K)\\
 \vdots \\
- f_q(a^{output}_1,a^{output}_2,\ldots,a^{output}_q)\\
+ f_K(a^{output}_1,a^{output}_2,\ldots,a^{output}_K)\\
  \end{pmatrix}
 \end{equation}
-Now, we want $\frac{\partial J}{\partial W^{(1)}_{i,j}}$, which is not explicitly related to loss function $J$. We could write:
+
+We can write:
 \begin{equation}
 p_r=h(W^{(1)}[c_1;c_2]+b^{(1)}])
 \end{equation} 
-where $h$ is a pointwise highly nonlinear function. Now we could have:
-
-We need the partial derivatives of the loss function with respect to parameters:
+where $h$ is a pointwise nonlinear function. We need the partial derivatives of the loss function,
 \begin{equation}
 \frac{\partial J}{\partial W^{(1*)}_{ij}} = \frac{\partial J}{\partial a_i}\frac{\partial a_i}{\partial W^{(1*)}_{ij}}=\delta_i \frac{\partial a_i}{\partial W^{(1*)}_{ij}}
 \end{equation}
@@ -244,7 +233,7 @@ We need the partial derivatives of the loss function with respect to parameters:
 \frac{\partial a^{output}_i}{\partial W^{label}}=[x_r;1]^T
 \end{equation}
 
-We want to calculate $\gamma_i$ which just related to error of reconstruction, $E_1$:
+$\gamma_i$ is related to error of reconstruction, $E_{rec}$:
 \begin{equation}
 \gamma_i=\frac{\partial J}{\partial e_i} = \alpha\frac{n_1}{n_1+n_2}2(c_1-\hat{c}_1)^T(-\frac{\partial \hat{c}_1}{\partial e_i})+\alpha\frac{n_2}{n_1+n_2}2(c_2-\hat{c}_2)^T(-\frac{\partial \hat{c}_2}{\partial e_i})
 \end{equation}
@@ -254,19 +243,21 @@ We want to calculate $\gamma_i$ which just related to error of reconstruction, $
 \begin{equation}
 \gamma_i=-\alpha[\frac{n_1}{n_1+n_2}2(c_1-\hat{c}_1);\frac{n_2}{n_1+n_2}2(c_2-\hat{c}_2)]
 \end{equation}
-where $\delta_i=\frac{\partial J}{\partial a^{(r)}_i}$ contains all nonlinearity. Now we could write:
+
+where $\delta_i=\frac{\partial J}{\partial a^{(r)}_i}$ contains all nonlinearity. Now we can write:
 \begin{equation}
-\frac{\partial J}{\partial a^{(r)}_i}= \sum_{k=1}^q\frac{\partial J}{\partial r_k}\frac{\partial r_k}{\partial a^{(r)}_i}
-\end{equation}
-$\frac{\partial J}{\partial r_k}=\frac{-t_k}{r_k}$, and we want $\frac{\partial r_k}{\partial a^{(r)}_i}$:
-\begin{equation}
-\frac{\partial r_k}{\partial a^{(r)}_i}=\frac{\partial f_k}{\partial a^{(r)}_i}=\sum_{t=1}^{q}\frac{\partial f_k}{\partial a^{output}_{t}}\frac{\partial a^{output}_t}{\partial a^{(r)}_i}
+\frac{\partial J}{\partial a^{(r)}_i}= \sum_{k=1}^K\frac{\partial J}{\partial r_k}\frac{\partial r_k}{\partial a^{(r)}_i}
 \end{equation}
 
-The output node with values $r$, the contribution to J is with the error of classification $E_2$.
+We have that $\frac{\partial J}{\partial r_k}=\frac{-t_k}{r_k}$, and we want to calculate $\frac{\partial r_k}{\partial a^{(r)}_i}$:
+\begin{equation}
+\frac{\partial r_k}{\partial a^{(r)}_i}=\frac{\partial f_k}{\partial a^{(r)}_i}=\sum_{t=1}^{K}\frac{\partial f_k}{\partial a^{output}_{t}}\frac{\partial a^{output}_t}{\partial a^{(r)}_i}
+\end{equation}
+
+The output node with values $r$, the contribution to J is with the error of classification $E_{CE}$.
 
 \begin{equation}
-\zeta_i=\frac{\partial J}{\partial a^{output}_i}=(1-\alpha)\frac{\partial }{\partial a^{output}_i}\sum_{l=1}{q}t_l\log{r_l}
+\zeta_i=\frac{\partial J}{\partial a^{output}_i}=(1-\alpha)\frac{\partial }{\partial a^{output}_i}\sum_{l=1}^{K}t_l\log{r_l}
 \end{equation}
 If $l=k$:
 \begin{equation}
@@ -278,14 +269,14 @@ and if $l\neq i$
 \end{equation}
 So we could calculate $\zeta_i$ as:
 \begin{equation}
-\zeta_i = -(1-\alpha)\sum_{l,l\neq i}^q\frac{t_i}{r_i}(-r_lr_i)-(1-\alpha)\frac{r_i}{1-r_i}=(1-\alpha)(r_i-t_i)
+\zeta_i = -(1-\alpha)\sum_{l,l\neq i}^K\frac{t_i}{r_i}(-r_lr_i)-(1-\alpha)\frac{r_i}{1-r_i}=(1-\alpha)(r_i-t_i)
 \end{equation}
 
 For the internal values $p$, they contribute to loss $J$ through the $[\hat{c}_1;\hat{c}_2]$, $r$:
 
 \begin{align}
-\delta_i=\frac{\partial J}{\partial a_i}=\sum_{k=1}^{d}\frac{\partial J}{\partial a_k}\frac{\partial a_k}{\partial a_i}+\sum_{k=1}^{2d}\frac{\partial J}{\partial e_k}\frac{\partial e_k}{\partial a_i}+\sum_{k=1}^{q}\frac{\partial J}{\partial a^{output}_k}\frac{\partial a^{output}_k}{\partial a_i} \\
-= \sum_{k=1}^{d}\delta_k\frac{\partial a_k}{\partial a_i}+\sum_{k=1}^{2d}\gamma_k\frac{\partial e_k}{\partial a_i}+\sum_{k=1}^{q}\zeta_k\frac{\partial a^{output}_k}{\partial a_i}
+\delta_i=\frac{\partial J}{\partial a_i}=\sum_{k=1}^{d}\frac{\partial J}{\partial a_k}\frac{\partial a_k}{\partial a_i}+\sum_{k=1}^{2d}\frac{\partial J}{\partial e_k}\frac{\partial e_k}{\partial a_i}+\sum_{k=1}^{K}\frac{\partial J}{\partial a^{output}_k}\frac{\partial a^{output}_k}{\partial a_i} \\
+= \sum_{k=1}^{d}\delta_k\frac{\partial a_k}{\partial a_i}+\sum_{k=1}^{2d}\gamma_k\frac{\partial e_k}{\partial a_i}+\sum_{k=1}^{K}\zeta_k\frac{\partial a^{output}_k}{\partial a_i}
 \end{align}
 Now we need to compute $\frac{\partial a_k}{\partial a_i}$, $\frac{\partial a^{output}_k}{\partial a_i}$, and $\frac{\partial e_k}{\partial a_i}$:
 \begin{equation}
@@ -300,14 +291,13 @@ where $V_{ki}$ is the part of $W^{(1*)}$ that multiplies a.
 \frac{\partial a^{output}_k}{\partial a_i}=\frac{\partial }{\partial a_i}[W^{label}[h(a);1]]_k=W^{label}_{ki}h'(a)
 \end{equation}
 \begin{align}
-\delta_i=\sum_{k=1}^{d}\delta_kV_{ki}h'(a_i)+\sum_{k=1}^{2d}\gamma_kW^{(2*)}_{ki}h'(a_i)+\sum_{k=1}^q \zeta_k W^{label}_{ki}h'(a_i)\\
-=h'(a_i)(\sum_{k=1}^{d}\delta_kV_{ki}+\sum_{k=1}^{2d}\gamma_kW^{(2*)}_{ki}+\sum_{k=1}^q \zeta_k W^{label}_{ki})
+\delta_i=\sum_{k=1}^{d}\delta_kV_{ki}h'(a_i)+\sum_{k=1}^{2d}\gamma_kW^{(2*)}_{ki}h'(a_i)+\sum_{k=1}^K \zeta_k W^{label}_{ki}h'(a_i)\\
+=h'(a_i)(\sum_{k=1}^{d}\delta_kV_{ki}+\sum_{k=1}^{2d}\gamma_kW^{(2*)}_{ki}+\sum_{k=1}^K \zeta_k W^{label}_{ki})
 \end{align}
 
 For the leaves we could write:
 \begin{equation}
-\frac{\partial J}{\partial x_i}=\delta_{x_i
-}\end{equation}
+\frac{\partial J}{\partial x_i}=\delta_{x_i}\end{equation}
 
 
 \subsection{Calculating derivatives for normalized vectors}
@@ -364,7 +354,8 @@ So the derivatives for the parameters are equal to:
 \frac{\partial J}{\partial W^{(label)}}=\delta[p;1]^T
 \end{equation}
 
-The algorithm for training the model is given in algorithm \ref{algorithm RA}.
+\subsection{Training Algorithm}
+To train the network, we start at leaves and perform a forward propagation to calculate the predicted label for the input. Then the derivatives and $\delta$ values are calculated and back prpagated from the root to the leaves. We start with a random initialization of parameters, then we update them after one epoch. The complete algorithm for training the model is given in algorithm \ref{algorithm RA}.
 
 \begin{algorithm}[h!]
 \# Input: Training Examples $<x_1, x_2, \ldots, x_n>$\\ 
@@ -390,11 +381,14 @@ In this section, we perform a series of experiments to validate the proposed mod
 \begin{equation}
 \frac{\partial J}{\partial \theta}=\frac{J(\theta+\epsilon)-J(\theta-\epsilon)}{2\epsilon}+O(\epsilon^2).
 \end{equation}
-We perform 4 series of experiments. The first two are with softmax classification function and normalized vectors, one with leaf update and the other without leaf update. The second two experiments are the same with tanh classification function. For each experiment, we show the norm of gradient as a sign of convergence of the algorithm. The recognition rate of the model for each approach is demonstrated on the test set, which is $1/3$ of the movie review dataset. This is a dataset containing 10662 movie reviews, equally distributed between two different positive and negative classes. And finally, we show the most positive and negative words learned for the version where the leaves are updated.
+For all experiments described below, we fix a set of parameters that are used in \cite{socher} . The dimensionality of meaning in all models is $d=20$. The $\alpha$ parameter is set to $0.2$, and the weight decay parameter is set to $\lambda=1e-5$. Maximum number of epochs is 100.  Most of the reviews contain more than one sentence. For these examples, we averaged the final prediction of the network for different sentences as the output for the entire text. The minimization was done using LBFGS method to minimize the cost function given in (\ref{eqError}).
+
+
+We perform 4 series of experiments. The first two are with softmax classification function and normalized vectors, one with leaf update and the other without leaf update. The second two experiments are the same except that we use with tanh activation function to predict the labels. For each experiment, we show the norm of gradient for different epochs as a sign of convergence of the algorithm. The recognition rate of the model for each approach is demonstrated on the test set, which is $1/3$ of the movie review dataset. This is a dataset containing 10662 movie reviews, equally distributed between positive and negative classes. And finally, we show the most positive and negative words learned for the version where the leaves are updated.
 
 \section{Results}
 \subsection{Gradient Check}
-Figure \ref{figGradCheck} shows the absolute value of the difference between numerical and gradients we derived in this paper. This figure shows the absolute difference value as a function of $\epsilon$ for softmax and tanh network. It is obvious that the derivatives are correct in comparison to the numerical derivatives.
+Figure \ref{figGradCheck} shows the absolute value of the difference between numerical derivatives and derivatives we claculated in this paper. This figure shows the absolute difference value as a function of $\epsilon$ for networks with softmax and tanh activation function. It is obvious that the derivatives are correct in comparison to the numerical derivatives for small values of $\epsilon$. 
 
 \begin{figure}[ht!]
 \centering
@@ -404,7 +398,7 @@ Figure \ref{figGradCheck} shows the absolute value of the difference between num
 \end{figure}
 
 \subsection{Convergence of Model Training}
-Figure \ref{figConvergence} shows the convergence of the algorithm for different configurations of the model.
+Figure \ref{figConvergence} shows the convergence of the algorithm for different configurations of the model. It is clear that all models converge in less than 50 epochs, where the gradient falls below $1e-5$. The rate of convergence for different models is different, with the models with leaf update having some fluctuations. This is reasonable since the models with leaf update change the representation of the input and explore larger areas in the search space.
 
 \begin{figure}[ht!]
 \centering
@@ -415,19 +409,19 @@ Figure \ref{figConvergence} shows the convergence of the algorithm for different
 
 
 
-\subsection{Recongition Performance on Test Set}
-The results of recognition are shown in table \ref{tableResults}
+\subsection{Recognition Performance on Test Set}
+The results of recognition are shown in table \ref{tableResults}. As one can see, there is a large margin between models with leaf update and models without leaf update. The model with softmax activation function and leaf update achieves the highest accuracy, while the model with tanh activation and  leaf update achieves 69\% accuracy on the test set. The model with softmax activation and no leaf update performs better on classification task compared to the model with tanh activation and leaf update. The lowest recognition rate is achieved by tanh activation function and no leaf update, which is about 67\%.  
 
-\begin{table}[!]
+\begin{table}[ht!]
 \begin{center}
 \begin{tabular}{| c | c |} 
 \hline
-\textbf{Model}& \textbf{Test set recognition rate}  \\ \hline
+\textbf{Model}& \textbf{Accuracy of test set recognition(\%)}  \\ \hline
 
-softmax- Leaf update     & $0.743$ \\ \hline
-softmax- no leaf update &  $0.514$ \\ \hline
-Tanh- leaf update          & $0.690$ \\ \hline
-Tanh- no leaf update     & $0.501$ \\ \hline
+softmax- Leaf update     & $74.3$ \\ \hline
+softmax- no leaf update &  $71.4$ \\ \hline
+Tanh- leaf update          & $69.0$ \\ \hline
+Tanh- no leaf update     & $67.1$ \\ \hline
  
 \end{tabular}
 \caption{Recognition rate for predicting the correct topic for each document for classic400 dataset.}
@@ -436,9 +430,10 @@ Tanh- no leaf update     & $0.501$ \\ \hline
 \end{table}
 
 \subsection{Most positive and most negative words}
+For each word in a sentence, we can perform the classification the same way we do for the root node of the tree. Then result is two probabilities of belonging to positive and negative class. We perform this for the entire training dataset, and pick 20 words with highest probability of belonging to positive and negative classes. We do this for two models: softmax activation with leaf update and tanh activation with leaf update. The results are shown in table  \ref{tableTopWordsClassic} for positive class and table \ref{tableBottomWordsClassic} for negative class. The positive words mostly include cheers and expression of support, while the negative words contain words that aim to belittle movies.\\
 
 
-\begin{table}[h!]
+\begin{table}[ht!]
 \begin{center}
 \begin{tabular}{| c | p{12cm} |}
 \hline
@@ -486,13 +481,13 @@ indictment,
 20th\\
  \hline
 \end{tabular}
-\caption{Top 20 words for 3 topics of Classic400. Topic 1 is scientific methods, topic 2 is aerospace-physics and topic 3 is medical.}
+\caption{Top 20 words for positive class from movie review dataset.These words have the highest probability of belonging to positive class.}
 \label{tableTopWordsClassic}
 \end{center}
 \end{table}
 
 
-\begin{table}[h!]
+\begin{table}[ht!]
 \begin{center}
 \begin{tabular}{| c | p{12cm} |}
 \hline
@@ -543,13 +538,16 @@ we
 \\
  \hline
 \end{tabular}
-\caption{Top 20 words for 3 topics of Classic400. Topic 1 is scientific methods, topic 2 is aerospace-physics and topic 3 is medical.}
-\label{tableTopWordsClassic}
+\caption{Top 20 words for negative class. These are the words that were classified to negative class with highest probabilities.}
+\label{tableBottomWordsClassic}
 \end{center}
 \end{table}
 
 
 \section{Discussion}
+In this paper, we developed a model for predicting sentiment of text. Predicting sentiment from input text is a challenging task because of many problems. It is difficult to represent individual words and sentences in a way that is suitable for sentiment prediction. We showed that a novel \emph{meaning}-based representation can be used to predict the text sentiment. The main contributions of this paper was the use of auto-encoder neural networks to extract the meaning of a sentence from the meaning of its constituent words. We used a dynamic structure for the network for different sentences that is derived from individual words in the sentence and their order.
+
+One of the difficulties for the proposed model is to determine the convergence of training and to terminate early to avoid over fitting. Because of many free parameters in the model, the training can bounce forever. We used LBFGS minimization instead of stochastic gradient following to avoid such instabilities in convergence. Also there are local minima of the target function, for example where all meaning vectors are converged to 0. We used normalized vectors to represent the meaning in network nodes. Another difficulty arises when assigning meaning vectors to individual words. We solved this problem by back propagating the error to update the individual word representations.
 
 
 
@@ -564,6 +562,15 @@ APA
 
 \bibitem{wallach}
 Wallach, Hanna M., et al. "Evaluation methods for topic models." Proceedings of the 26th Annual International Conference on Machine Learning. ACM, 2009.
+
+\bibitem{socher}
+Socher, Richard, Jeffrey Pennington, Eric H. Huang, Andrew Y. Ng, and Christopher D. Manning. "Semi-supervised recursive autoencoders for predicting sentiment distributions." In Proceedings of the Conference on Empirical Methods in Natural Language Processing, pp. 151-161. Association for Computational Linguistics, 2011.
+
+\bibitem{pang2005}
+Pang and L. Lee. 2005. Seeing stars: Exploiting class relationships for sentiment categorization with respect to rating scales. In ACL, pages 115Ð124.
+
+\bibitem{pang2002}
+Pang, L. Lee, and S. Vaithyanathan. 2002. Thumbs up? Sentiment classification using machine learning techniques. In EMNLP.
 
 \end{thebibliography}
 
