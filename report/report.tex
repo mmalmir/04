@@ -360,10 +360,8 @@ So the derivatives for the parameters are equal to:
 \frac{\partial J}{\partial W^{(label)}}=\delta[p;1]^T
 \end{equation}
 
-We could calculate the numerical gradients using the following equation and then compare it with our results above:
-\begin{equation}
-\frac{\partial J}{\partial \theta}=\frac{J(\theta+\epsilon)-J(\theta-\epsilon)}{2\epsilon}+O(\epsilon^2)
-\end{equation}
+The algorithm for training the model is given in algorithm \ref{algorithm RA}.
+
 \begin{algorithm}[h!]
 \# Input: Training Examples $<x_1, x_2, \ldots, x_n>$\\ 
 \# Output: Training Model\\$\theta=<W^{(1)},b^{(1)},W^{(2)},b^{(2)},W^{label},Leaves>$\\ 
@@ -394,7 +392,7 @@ We perform 4 series of experiments. The first two are with softmax classificatio
 \subsection{Gradient Check}
 Figure \ref{figGradCheck} shows the absolute value of the difference between numerical and gradients we derived in this paper. This figure shows the absolute difference value as a function of $\epsilon$ for softmax and tanh network. It is obvious that the derivatives are correct in comparison to the numerical derivatives.
 
-\begin{figure}
+\begin{figure}[ht!]
 \centering
 \includegraphics[width=1.\textwidth]{gradError.pdf}
 \caption{Absolute difference between the numerical gradient and derivatives we derived in this paper.}
@@ -402,10 +400,37 @@ Figure \ref{figGradCheck} shows the absolute value of the difference between num
 \end{figure}
 
 \subsection{Convergence of Model Training}
+Figure \ref{figConvergence} shows the convergence of the algorithm for different configurations of the model.
+
+\begin{figure}[ht!]
+\centering
+\includegraphics[width=1.\textwidth]{convergence.pdf}
+\caption{Convergence of different models based on the number of epochs.}
+\label{figConvergence}
+\end{figure}
+
 
 
 \subsection{Recongition Performance on Test Set}
-To further test the 
+The results of recognition are shown in table \ref{tableResults}
+
+\begin{table}[!]
+\begin{center}
+\begin{tabular}{| c | c |} 
+\hline
+\textbf{Model}& \textbf{Test set recognition rate}  \\ \hline
+
+softmax- Leaf update     & $0.743$ \\ \hline
+softmax- no leaf update &  $0.514$ \\ \hline
+Tanh- leaf update          & $0.690$ \\ \hline
+Tanh- no leaf update     & $0.501$ \\ \hline
+ 
+\end{tabular}
+\caption{Recognition rate for predicting the correct topic for each document for classic400 dataset.}
+\label{tableResults}
+\end{center}
+\end{table}
+
 
 \section{Discussion}
 
