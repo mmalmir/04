@@ -1,17 +1,18 @@
-\BOOKMARK [1][-]{section.1}{Abstract}{}% 1
-\BOOKMARK [1][-]{section.2}{Introduction}{}% 2
-\BOOKMARK [1][-]{section.3}{Design and Analysis of Algorithm}{}% 3
-\BOOKMARK [2][-]{subsection.3.1}{Recursive definition of meaning}{section.3}% 4
-\BOOKMARK [2][-]{subsection.3.2}{Autoencoders}{section.3}% 5
-\BOOKMARK [2][-]{subsection.3.3}{ Selecting a tree structure}{section.3}% 6
-\BOOKMARK [2][-]{subsection.3.4}{Using meaning to predict labels}{section.3}% 7
-\BOOKMARK [2][-]{subsection.3.5}{Back-propagation for vector-valued nodes}{section.3}% 8
-\BOOKMARK [2][-]{subsection.3.6}{Calculating derivatives for normalized vectors}{section.3}% 9
-\BOOKMARK [2][-]{subsection.3.7}{Summarizing Derivatives}{section.3}% 10
-\BOOKMARK [1][-]{section.4}{Design of Experiment}{}% 11
-\BOOKMARK [1][-]{section.5}{Results}{}% 12
-\BOOKMARK [2][-]{subsection.5.1}{Gradient Check}{section.5}% 13
-\BOOKMARK [2][-]{subsection.5.2}{Convergence of Model Training}{section.5}% 14
-\BOOKMARK [2][-]{subsection.5.3}{Recongition Performance on Test Set}{section.5}% 15
-\BOOKMARK [2][-]{subsection.5.4}{Most positive and most negative words}{section.5}% 16
-\BOOKMARK [1][-]{section.6}{Discussion}{}% 17
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [1][-]{section.2}{Proposed Model}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{Overal Architecture}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{Reconstruction Error}{section.2}% 4
+\BOOKMARK [2][-]{subsection.2.3}{Predicting Sentiment}{section.2}% 5
+\BOOKMARK [2][-]{subsection.2.4}{Greedy Construction of Neural Network Structure}{section.2}% 6
+\BOOKMARK [2][-]{subsection.2.5}{Learning Model Parameters}{section.2}% 7
+\BOOKMARK [2][-]{subsection.2.6}{Backpropagation}{section.2}% 8
+\BOOKMARK [2][-]{subsection.2.7}{Back-propagation for vector-valued nodes}{section.2}% 9
+\BOOKMARK [2][-]{subsection.2.8}{Calculating derivatives for normalized vectors}{section.2}% 10
+\BOOKMARK [2][-]{subsection.2.9}{Summarizing Derivatives}{section.2}% 11
+\BOOKMARK [1][-]{section.3}{Design of Experiment}{}% 12
+\BOOKMARK [1][-]{section.4}{Results}{}% 13
+\BOOKMARK [2][-]{subsection.4.1}{Gradient Check}{section.4}% 14
+\BOOKMARK [2][-]{subsection.4.2}{Convergence of Model Training}{section.4}% 15
+\BOOKMARK [2][-]{subsection.4.3}{Recongition Performance on Test Set}{section.4}% 16
+\BOOKMARK [2][-]{subsection.4.4}{Most positive and most negative words}{section.4}% 17
+\BOOKMARK [1][-]{section.5}{Discussion}{}% 18

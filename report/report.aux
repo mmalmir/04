@@ -14,42 +14,53 @@
 \global\let\hyper@last\relax 
 \gdef\HyperFirstAtBeginDocument#1{#1}
 \providecommand\HyField@AuxAddToFields[1]{}
+\citation{pang2005}
+\citation{pang2002}
 \select@language{english}
 \@writefile{toc}{\select@language{english}}
 \@writefile{lof}{\select@language{english}}
 \@writefile{lot}{\select@language{english}}
-\@writefile{toc}{\contentsline {section}{\numberline {1}Abstract}{1}{section.1}}
-\@writefile{toc}{\contentsline {section}{\numberline {2}Introduction}{1}{section.2}}
-\@writefile{toc}{\contentsline {section}{\numberline {3}Design and Analysis of Algorithm}{1}{section.3}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Recursive definition of meaning}{1}{subsection.3.1}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Autoencoders}{2}{subsection.3.2}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3} Selecting a tree structure}{3}{subsection.3.3}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Using meaning to predict labels}{3}{subsection.3.4}}
-\@writefile{loa}{\contentsline {algocf}{\numberline {1}{\ignorespaces Constructing the Tree using Greedy Algorithm\relax }}{4}{algocf.1}}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Proposed Model}{2}{section.2}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Overal Architecture}{2}{subsection.2.1}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces An exemplar schematic diagram of recursive auto-encoder network developed in this paper. Blue nodes indicate the words of the input sentence, the orange nodes indicate the intermediate coding of meaning of parts of sentence. The violet nodes are the reconstruction of input nodes, and the green node is the predicted target. The weight matrices for encoding, reconstruction and label prediction are indicated correspondingly by $W^1$, $W^2$ and $W^{label}$. \relax }}{3}{figure.caption.2}}
 \providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
-\newlabel{algorithm tree}{{1}{4}{Selecting a tree structure\relax }{algocf.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Back-propagation for vector-valued nodes}{5}{subsection.3.5}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.6}Calculating derivatives for normalized vectors}{9}{subsection.3.6}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.7}Summarizing Derivatives}{9}{subsection.3.7}}
-\@writefile{loa}{\contentsline {algocf}{\numberline {2}{\ignorespaces Training the Recursive Autoencoder\relax }}{10}{algocf.2}}
-\newlabel{algorithm RA}{{2}{10}{Summarizing Derivatives\relax }{algocf.2}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {4}Design of Experiment}{10}{section.4}}
-\@writefile{toc}{\contentsline {section}{\numberline {5}Results}{11}{section.5}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Gradient Check}{11}{subsection.5.1}}
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Absolute difference between the numerical gradient and derivatives we derived in this paper.\relax }}{11}{figure.caption.3}}
-\newlabel{figGradCheck}{{1}{11}{Absolute difference between the numerical gradient and derivatives we derived in this paper.\relax \relax }{figure.caption.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Convergence of Model Training}{11}{subsection.5.2}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Recongition Performance on Test Set}{11}{subsection.5.3}}
+\newlabel{figRAE}{{1}{3}{An exemplar schematic diagram of recursive auto-encoder network developed in this paper. Blue nodes indicate the words of the input sentence, the orange nodes indicate the intermediate coding of meaning of parts of sentence. The violet nodes are the reconstruction of input nodes, and the green node is the predicted target. The weight matrices for encoding, reconstruction and label prediction are indicated correspondingly by $W^1$, $W^2$ and $W^{label}$. \relax \relax }{figure.caption.2}{}}
+\newlabel{eqEncoding}{{1}{4}{Overal Architecture\relax }{equation.2.1}{}}
+\newlabel{eqReconst}{{2}{4}{Overal Architecture\relax }{equation.2.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Reconstruction Error}{4}{subsection.2.2}}
+\newlabel{eqRecErr}{{3}{4}{Reconstruction Error\relax }{equation.2.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Encoding and Decoding stages of the recursive auto-encoder network. There are two $d$-dimensional inputs to the network. The encoding part which is indicated by matrix $W^1$ and red-colored edges, embeds the inputs to a $d$-dimensional representation. The decoding stage is represented by blue color edges and matrix $W^2$, aims to reconstruct the original inputs from the encoded representation. Only one column of $W^1$ and $W^2$ are shown for clarity.\relax }}{5}{figure.caption.3}}
+\newlabel{figEncodingDecoding}{{2}{5}{Encoding and Decoding stages of the recursive auto-encoder network. There are two $d$-dimensional inputs to the network. The encoding part which is indicated by matrix $W^1$ and red-colored edges, embeds the inputs to a $d$-dimensional representation. The decoding stage is represented by blue color edges and matrix $W^2$, aims to reconstruct the original inputs from the encoded representation. Only one column of $W^1$ and $W^2$ are shown for clarity.\relax \relax }{figure.caption.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Predicting Sentiment}{6}{subsection.2.3}}
+\newlabel{eqCEErr}{{6}{6}{Predicting Sentiment\relax }{equation.2.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Greedy Construction of Neural Network Structure}{6}{subsection.2.4}}
+\@writefile{loa}{\contentsline {algocf}{\numberline {1}{\ignorespaces Greedy Algorithm For Building the Tree for a Sentence.\relax }}{7}{algocf.1}}
+\newlabel{algGreedyTree}{{1}{7}{Greedy Construction of Neural Network Structure\relax }{algocf.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Learning Model Parameters}{7}{subsection.2.5}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.6}Backpropagation}{8}{subsection.2.6}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.7}Back-propagation for vector-valued nodes}{8}{subsection.2.7}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.8}Calculating derivatives for normalized vectors}{12}{subsection.2.8}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.9}Summarizing Derivatives}{12}{subsection.2.9}}
+\@writefile{loa}{\contentsline {algocf}{\numberline {2}{\ignorespaces Training the Recursive Autoencoder\relax }}{13}{algocf.2}}
+\newlabel{algorithm RA}{{2}{13}{Summarizing Derivatives\relax }{algocf.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Design of Experiment}{13}{section.3}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Results}{14}{section.4}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Gradient Check}{14}{subsection.4.1}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Absolute difference between the numerical gradient and derivatives we derived in this paper.\relax }}{14}{figure.caption.6}}
+\newlabel{figGradCheck}{{3}{14}{Absolute difference between the numerical gradient and derivatives we derived in this paper.\relax \relax }{figure.caption.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Convergence of Model Training}{14}{subsection.4.2}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Recongition Performance on Test Set}{14}{subsection.4.3}}
 \bibcite{fastlda}{1}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Convergence of different models based on the number of epochs.\relax }}{12}{figure.caption.4}}
-\newlabel{figConvergence}{{2}{12}{Convergence of different models based on the number of epochs.\relax \relax }{figure.caption.4}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Recognition rate for predicting the correct topic for each document for classic400 dataset.\relax }}{12}{table.caption.5}}
-\newlabel{tableResults}{{1}{12}{Recognition rate for predicting the correct topic for each document for classic400 dataset.\relax \relax }{table.caption.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Convergence of different models based on the number of epochs.\relax }}{15}{figure.caption.7}}
+\newlabel{figConvergence}{{4}{15}{Convergence of different models based on the number of epochs.\relax \relax }{figure.caption.7}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Recognition rate for predicting the correct topic for each document for classic400 dataset.\relax }}{15}{table.caption.8}}
+\newlabel{tableResults}{{1}{15}{Recognition rate for predicting the correct topic for each document for classic400 dataset.\relax \relax }{table.caption.8}{}}
 \bibcite{harmonic}{2}
 \bibcite{wallach}{3}
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Top 20 words for 3 topics of Classic400. Topic 1 is scientific methods, topic 2 is aerospace-physics and topic 3 is medical.\relax }}{13}{table.caption.6}}
-\newlabel{tableTopWordsClassic}{{2}{13}{Top 20 words for 3 topics of Classic400. Topic 1 is scientific methods, topic 2 is aerospace-physics and topic 3 is medical.\relax \relax }{table.caption.6}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Top 20 words for 3 topics of Classic400. Topic 1 is scientific methods, topic 2 is aerospace-physics and topic 3 is medical.\relax }}{13}{table.caption.7}}
-\newlabel{tableTopWordsClassic}{{3}{13}{Top 20 words for 3 topics of Classic400. Topic 1 is scientific methods, topic 2 is aerospace-physics and topic 3 is medical.\relax \relax }{table.caption.7}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Most positive and most negative words}{13}{subsection.5.4}}
-\@writefile{toc}{\contentsline {section}{\numberline {6}Discussion}{13}{section.6}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Top 20 words for 3 topics of Classic400. Topic 1 is scientific methods, topic 2 is aerospace-physics and topic 3 is medical.\relax }}{16}{table.caption.9}}
+\newlabel{tableTopWordsClassic}{{2}{16}{Top 20 words for 3 topics of Classic400. Topic 1 is scientific methods, topic 2 is aerospace-physics and topic 3 is medical.\relax \relax }{table.caption.9}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Top 20 words for 3 topics of Classic400. Topic 1 is scientific methods, topic 2 is aerospace-physics and topic 3 is medical.\relax }}{16}{table.caption.10}}
+\newlabel{tableTopWordsClassic}{{3}{16}{Top 20 words for 3 topics of Classic400. Topic 1 is scientific methods, topic 2 is aerospace-physics and topic 3 is medical.\relax \relax }{table.caption.10}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Most positive and most negative words}{16}{subsection.4.4}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{16}{section.5}}
